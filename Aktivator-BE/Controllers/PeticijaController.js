@@ -187,15 +187,26 @@ exports.editPeticija = async (req, res) => {
     let session = neo4j_client.session();
 
     try {
+
         const p_res = await session.run(
-            `MATCH (p:Peticija {naslov:$naslov}) SET p.broj_potpisa = p.broj_potpisa+1 RETURN p AS Peticija`,
+            // `MATCH (p:Peticija {naslov:$naslov})-[:SIGNED]->(u:User {email : $user_mail})
+            // SET p.broj_potpisa = p.broj_potpisa+1 RETURN p AS Peticija`,
+            `MATCH (node:Peticija {naslov:$naslov}) 
+             WHERE NOT (node)-[:SIGNED]->(:User {email : $user_mail}) 
+             SET node.broj_potpisa = node.broj_potpisa+1
+             RETURN node AS Peticija`,
+
             {
-                naslov: naslov
+                naslov: naslov,
+                user_mail: user_mail
             }
         );
 
         if (p_res.records.length === 0) {
-            return res.status(404).json({ message: "Peticija not found" });
+            return res.status(404).json({ message: "vec si potpiso bato" });
+        }
+        if (!p_res.records[0].get("Peticija")) {
+            return res.status(406).json({ message: "vec si potpiso bato" });
         }
 
         const peticija = new Peticija();
