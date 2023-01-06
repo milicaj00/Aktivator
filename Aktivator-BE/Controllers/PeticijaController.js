@@ -94,7 +94,9 @@ exports.getSinglePeticija = async (req, res) => {
 };
 
 exports.findPeticijas = async (req, res) => {
-    const tag_filter = req.params.tag;
+    const tag_filter = req.query.tag
+        ? ".*" + req.query.tag.toLowerCase() + ".*"
+        : ".*";
     const user_name_filter = req.query.user_name
         ? ".*" + req.query.user_name.toLowerCase() + ".*"
         : ".*";
@@ -106,7 +108,7 @@ exports.findPeticijas = async (req, res) => {
     try {
         const p_res = await session
             .run(
-                `MATCH (t:Tag {naziv:$nazivTaga})-[:TAGGED]->(n:Peticija)
+                `MATCH (t:Tag WHERE toLower(t.naziv) =~ $nazivTaga)-[:TAGGED]->(n:Peticija)
                 <-[:WRITTEN]-(u:User WHERE toLower(u.name) =~ $userName AND toLower(u.surname) =~ $userSurname) 
                 RETURN (n) AS Peticija, (t) AS Tag, (u) AS User`,
                 {
@@ -137,6 +139,28 @@ exports.findPeticijas = async (req, res) => {
             });
 
         const found_peticijas = [...new Set(p_res)];
+
+        for (let i = 0; i < found_peticijas.length; i++) {
+            const peticija = found_peticijas[i];
+            const tags = new Set(peticija.tag);
+            await session
+                .run(
+                    `MATCH ((t:Tag)--(:Peticija {naslov:$naslov})) RETURN (t) as tags`,
+                    {
+                        naslov: peticija.naslov
+                    }
+                )
+                .then(result => {
+                    result.records.forEach(r => {
+                        const tag = new Tag("");
+                        tag.makeTag(r.get("tags"));
+                        tags.add(tag.naziv);
+                    });
+                });
+
+            peticija.tag = [...tags];
+        }
+
         session.close();
         return res.status(200).json(found_peticijas);
     } catch (err) {
@@ -146,9 +170,61 @@ exports.findPeticijas = async (req, res) => {
 };
 
 exports.editPeticija = async (req, res) => {
+    const { naslov, user_name, user_surname, user_mail } = req.body;
+
+    if (!naslov || naslov.length < 5) {
+        return res.status(406).json({ message: "Naslov mora biti duzi od 5" });
+    }
+    if (!user_name) {
+        return res.status(406).json({ message: "morate unesti ime" });
+    }
+    if (!user_surname) {
+        return res.status(406).json({ message: "Morate uneti prezime" });
+    }
+    if (!user_mail) {
+        return res.status(406).json({ message: "Nemas mail od usera" });
+    }
+    let session = neo4j_client.session();
+
     try {
-        return res.status(200).json("");
+        const p_res = await session.run(
+            `MATCH (p:Peticija {naslov:$naslov}) SET p.broj_potpisa = p.broj_potpisa+1 RETURN p AS Peticija`,
+            {
+                naslov: naslov
+            }
+        );
+
+        if (p_res.records.length === 0) {
+            return res.status(404).json({ message: "Peticija not found" });
+        }
+
+        const peticija = new Peticija();
+        peticija.makePeticija(p_res.records[0].get("Peticija"));
+
+        await session.run(
+            "MERGE (n:User {email: $email , name: $name , surname: $surname }) RETURN n",
+            {
+                email: user_mail,
+                name: user_name,
+                surname: user_surname
+            }
+        );
+
+        await session.run(
+            `MATCH (b:Peticija), (u:User) 
+            WHERE b.naslov = $naslovPeticije AND u.email = $user_mail
+            MERGE (b)-[:SIGNED]->(u) RETURN b,u`,
+            {
+                naslovPeticije: naslov,
+                user_mail: user_mail
+            }
+        );
+
+        session.close();
+        return res.status(200).json({ message: "Succces", data: peticija });
     } catch (err) {
+        session.close();
+
         return res.status(500).json(err);
     }
 };
@@ -219,7 +295,7 @@ exports.addPeticija = async (req, res) => {
         await session.run(
             `MATCH (b:Peticija), (u:User) 
             WHERE b.naslov = $naslovPeticije AND u.email = $user_mail
-            CREATE (u)-[write:WRITTEN]->(b) RETURN b,u`,
+            MERGE (u)-[write:WRITTEN]->(b) RETURN b,u`,
             {
                 naslovPeticije: peticija.naslov,
                 user_mail: user_mail
@@ -230,7 +306,7 @@ exports.addPeticija = async (req, res) => {
             await session.run(
                 `MATCH (b:Peticija), (t:Tag) 
                 WHERE b.naslov = $naslovPeticije AND t.naziv = $nazivTaga
-                CREATE (t)-[tag:TAGGED]->(b) RETURN t,b`,
+                MERGE (t)-[tag:TAGGED]->(b) RETURN t,b`,
                 {
                     nazivTaga: peticija.tag[i],
                     naslovPeticije: peticija.naslov

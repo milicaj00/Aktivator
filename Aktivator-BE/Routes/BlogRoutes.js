@@ -5,7 +5,7 @@ const Blog = require("../Controllers/BlogController");
 
 router.get("/allBlogs", Blog.getAllBlogs);
 router.get("/singleBlog/:naslov", Blog.getSingleBlog);
-router.get("/findBlog/:tag", Blog.findBlogs);
+router.get("/findBlog", Blog.findBlogs);
 router.delete("/deleteBlog/:naslov", Blog.deleteBlog);
 router.post("/addBlog", Blog.addBlog);
 

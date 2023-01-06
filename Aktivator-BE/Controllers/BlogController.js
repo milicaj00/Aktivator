@@ -12,8 +12,6 @@ exports.getAllBlogs = async (req, res) => {
             )
             .then(result => {
                 let pomB = new Blog();
-                console.log(result.records);
-
                 return result.records.map(r => {
                     const p = new Blog();
                     p.makeBlog(r.get("Blog"));
@@ -98,7 +96,9 @@ exports.getSingleBlog = async (req, res) => {
 };
 
 exports.findBlogs = async (req, res) => {
-    const tag_filter = req.params.tag;
+    const tag_filter = req.query.tag
+        ? ".*" + req.query.tag.toLowerCase() + ".*"
+        : ".*";
     const user_name_filter = req.query.user_name
         ? ".*" + req.query.user_name.toLowerCase() + ".*"
         : ".*";
@@ -110,7 +110,7 @@ exports.findBlogs = async (req, res) => {
     try {
         const p_res = await session
             .run(
-                `MATCH (t:Tag {naziv:$nazivTaga})-[:TAGGED]->(n:Blog)
+                `MATCH (t:Tag WHERE toLower(t.naziv) =~ $nazivTaga)-[:TAGGED]->(n:Blog)
                 <-[:WRITTEN]-(u:User WHERE toLower(u.name) =~ $userName AND toLower(u.surname) =~ $userSurname) 
                 RETURN (n) AS Blog, (t) AS Tag, (u) AS User`,
                 {
@@ -121,7 +121,7 @@ exports.findBlogs = async (req, res) => {
             )
             .then(result => {
                 let pomB = new Blog();
-               
+
                 return result.records.map(r => {
                     const p = new Blog();
                     p.makeBlog(r.get("Blog"));
@@ -142,6 +142,28 @@ exports.findBlogs = async (req, res) => {
             });
 
         const blog_list = [...new Set(p_res)];
+
+        for (let i = 0; i < blog_list.length; i++) {
+            const blog = blog_list[i];
+            const tags = new Set(blog.tag);
+            await session
+                .run(
+                    `MATCH ((t:Tag)--(:Blog {naslov:$naslov})) RETURN (t) as tags`,
+                    {
+                        naslov: blog.naslov
+                    }
+                )
+                .then(result => {
+                    result.records.forEach(r => {
+                        const tag = new Tag("");
+                        tag.makeTag(r.get("tags"));
+                        tags.add(tag.naziv);
+                    });
+                });
+
+            blog.tag = [...tags];
+        }
+
         session.close();
         return res.status(200).json(blog_list);
     } catch (err) {

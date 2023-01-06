@@ -50,6 +50,53 @@ exports.addUser = async (req, res) => {
     } catch (err) {
         return res.status(500).json(err);
     }
+};
 
-    // return res.status(500).json({ message: "ne znam sto je puko" });
+exports.log_in = async (req, res) => {
+    const { email, password } = req.body;
+    const emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+    if (!email || !email.match(emailFormat)) {
+        return res.status(406).json({ message: "nevalidan mail" });
+    }
+
+    if (password && password.length < 4) {
+        return res
+            .status(406)
+            .json({ message: "Lozinka mora da bude duza od 6" });
+    }
+
+    try {
+        let session = neo4j_client.session();
+
+        await session
+            .run("MATCH (n:User {email: $email}) RETURN n AS User", {
+                email: email
+            })
+            .then(data => {
+                session.close();
+
+                if (data.records.length === 0) {
+                    return res.status(404).json({ message: "user not found" });
+                }
+
+                const user = new User();
+                user.makeUser(data.records[0].get("User"));
+
+                if (user.password !== password) {
+                    return res
+                        .status(402)
+                        .json({ message: "losa sifra brabo" });
+                }
+
+                return res
+                    .status(200)
+                    .json({ message: "success", data: user.toShort() });
+            })
+            .catch(err => {
+                return res.status(500).json(err);
+            });
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+
 };
