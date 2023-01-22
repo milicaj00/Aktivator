@@ -1,37 +1,37 @@
 import { Button, TextField, Box, Typography, Tooltip } from "@mui/material";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 
 const PeticijaForma = () => {
+  const [slika, setSlika] = useState("");
   const napraviPeticiju = async (event) => {
     event.preventDefault();
+
     const data = new FormData(event.currentTarget);
+    data.append("slika", slika);
+    data.append("user_email", JSON.parse(localStorage.getItem("user")).email);
 
     await axios
-      .post("http://localhost:3005/api/peticija/addPeticija", {
-        naslov: data.get("naslov"),
-        text: data.get("text"),
-        tag: data.get("tag"),
-        user_email: JSON.parse(window.localStorage.getItem("user")).email,
-        slika: data.get("slika"),
-      })
+      .post("http://localhost:3005/api/peticija/addPeticija", data)
       .then((res) => {
         if (res.status === 200) {
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
           notify();
         }
       })
       .catch((error) => {
         if (error.response.status === 406) {
-          notifyError(error.response.message);
-          console.log(error.response.message);
+          notifyError(error.response.data.message);
+          console.log(error.response.data.message);
         } else {
           notifyError("Doslo je do greske!");
         }
       });
 
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
+    
   };
   const notify = () => toast.success("Uspesno ste dodali peticiju!");
   const notifyError = (text) => toast.error(text);
@@ -51,7 +51,7 @@ const PeticijaForma = () => {
           size="small"
         />
         <TextField
-          name="Tekst"
+          name="text"
           className="prelomi"
           label="Tekst"
           type="text"
@@ -75,9 +75,11 @@ const PeticijaForma = () => {
           />
         </Tooltip>
         <TextField
-          name="slika"
           className="loginInp"
           type="file"
+          onChange={(event) => {
+            setSlika(event.target.files[0]);
+          }}
           color="primary"
           size="small"
         />
