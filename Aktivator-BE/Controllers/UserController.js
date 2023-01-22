@@ -29,6 +29,7 @@ exports.addUser = async (req, res) => {
         user.name = name;
         user.surname = surname;
         user.password = password ? password : "";
+
         const res1 = await session.run(
             "MATCH (n:User {email: $email }) RETURN n",
             {
@@ -37,9 +38,11 @@ exports.addUser = async (req, res) => {
         );
 
         if (res1.records?.length !== 0) {
-            return res
-                .status(406)
-                .json({ message: "Vec si se registrovao bato" });
+            const pom_user = res1.records[0]._fields[0].properties;
+            if (pom_user.password)
+                return res
+                    .status(406)
+                    .json({ message: "Vec si se registrovao bato" });
         }
 
         const salt = await bcrypt.genSalt(16);
@@ -47,7 +50,7 @@ exports.addUser = async (req, res) => {
 
         await session
             .run(
-                "MERGE (n:User {email: $email , name: $name , surname: $surname, password: $password }) RETURN n AS User",
+                "MERGE (n:User {email: $email, name: $name, surname: $surname, password: $password }) RETURN n AS User",
                 {
                     email: email,
                     name: name,

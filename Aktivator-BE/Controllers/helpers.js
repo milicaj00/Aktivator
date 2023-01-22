@@ -20,5 +20,5 @@ exports.makeImage = async (file, fileName) => {
         })
         .toFile(filepath);
 
-    return true;
+    return `${fileName}.${fileext}`;
 };

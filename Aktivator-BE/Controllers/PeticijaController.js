@@ -130,6 +130,8 @@ exports.findPeticijas = async (req, res) => {
 
         session.close();
 
+        console.log({found_peticijas})
+
         RedisPeticija.savePeticijas(
             found_peticijas,
             req.query.tag,
@@ -234,8 +236,8 @@ exports.addPeticija = async (req, res) => {
         return res.status(406).json({ message: "Nemas mail od usera" });
     }
 
-    const pom = await helpers.makeImage(req.file, "Peticija " + naslov);
-    if (pom === false) {
+    const image = await helpers.makeImage(req.file, "Peticija " + naslov);
+    if (image === false) {
         return res.status(500).json({ message: "Doslo je do greske" });
     }
 
@@ -283,7 +285,7 @@ exports.addPeticija = async (req, res) => {
             {
                 naslov: peticija.naslov,
                 text: peticija.text,
-                slika: "Peticija " + naslov
+                slika: image
             }
         );
 

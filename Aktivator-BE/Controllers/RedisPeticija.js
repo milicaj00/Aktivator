@@ -8,12 +8,13 @@ exports.getPeticijas = async (req, res, next) => {
         "peticija_tag_name:" + req.query.tag
     );
 
+    console.log('get peticija ' + req.query.tag)
     if (redis_res?.length > 0) {
-        console.log("redis peticija");
         return res.status(200).send(JSON.parse(redis_res));
     }
 
     const redis_all_peticijas = await redis_client.get("all_peticijas");
+    console.log({redis_all_peticijas})
     if (redis_all_peticijas?.length > 0) {
         return res.status(200).send(JSON.parse(redis_all_peticijas));
     }
@@ -22,9 +23,14 @@ exports.getPeticijas = async (req, res, next) => {
 };
 
 exports.savePeticijas = async (peticija_list, tag, user_name, user_surname) => {
+
+    console.log('save peticija')
+    return
+
     if (user_name && user_surname) {
         return;
     }
+    
     if (tag) {
         await redis_client.setEx(
             "peticija_tag_name:" + tag,
@@ -53,6 +59,8 @@ exports.getSinglePeticija = async (req, res, next) => {
 };
 
 exports.saveSinglePeticija = async peticija => {
+    console.log('save peticija')
+    return
     await redis_client.setEx(
         "single_peticija:" + peticija.naslov,
         3600,

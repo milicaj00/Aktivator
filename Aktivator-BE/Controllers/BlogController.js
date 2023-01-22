@@ -168,9 +168,9 @@ exports.addBlog = async (req, res) => {
         return res.status(406).json({ message: "Nemas mail od usera" });
     }
 
-    const pom = await helpers.makeImage(req.file, "Blog " + naslov);
+    const image = await helpers.makeImage(req.file, "Blog " + naslov);
 
-    if (pom === false) {
+    if (image === false) {
         return res.status(500).json({ message: "Doslo je do greske" });
     }
 
@@ -218,7 +218,7 @@ exports.addBlog = async (req, res) => {
             {
                 naslov: blog.naslov,
                 text: blog.text,
-                slika: "Blog " + naslov
+                slika: image
             }
         );
 
