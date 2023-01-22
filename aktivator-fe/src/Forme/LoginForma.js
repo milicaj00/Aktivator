@@ -26,9 +26,8 @@ const LoginForma = () => {
       })
       .catch((error) => {
         if (error.response.status === 406) {
-          notifyError(error.response.message);
-
-          console.log(error.response.message);
+          notifyError(error.response.data.message);
+          console.log(error.response.data.message);
         } else {
           notifyError("Doslo je do greske!");
         }
@@ -41,12 +40,16 @@ const LoginForma = () => {
   const notifyError = (text) => toast.error(text);
 
   return (
-    <Box>
+    <Box
+      className="cardCenter"
+      sx={{ gap: "1vh", padding: { sm: "10% 10%" }, alignItems: "stretch" }}
+    >
       <Typography variant="h5" component="div" sx={{ textAlign: "center" }}>
-        Uloguj se:
+        Prijavljivanje
       </Typography>
-      <Box component="form" onSubmit={login}>
+      <Box sx = {{padding:"0% 20%" }} component="form" onSubmit={login}>
         <TextField
+          sx={{ width: "100%", mb: "1vh" }}
           name="email"
           className="loginInp"
           label="Email"
@@ -55,6 +58,7 @@ const LoginForma = () => {
           size="small"
         />
         <TextField
+          sx={{ width: "100%", mb: "1vh" }}
           name="password"
           className="loginInp"
           label="Lozinka"
@@ -63,7 +67,12 @@ const LoginForma = () => {
           color="primary"
           size="small"
         />
-        <Button size="small" variant="contained" type="submit">
+        <Button
+          sx={{ width: "100%", mb: "1vh" }}
+          size="small"
+          variant="contained"
+          type="submit"
+        >
           Uloguj se
         </Button>
       </Box>

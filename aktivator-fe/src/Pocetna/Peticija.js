@@ -11,29 +11,61 @@ import {
   Typography,
   Box,
   InputBase,
-  IconButton,
+  Dialog,
+  Tooltip,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { styled, alpha } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
+import PeticijaForma from "../Forme/PeticijaForma";
 
 const PUTANJA = "http://localhost:3005/";
 
 const Peticija = () => {
   const [peticije, setPeticije] = useState([]);
+  const [user, setUser] = useState(null);
+  const [open, setOpen] = useState(false);
+
+  let navigate = useNavigate();
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   useEffect(() => {
-    async function getPeticije() {
-      await axios
-        .get("http://localhost:3005/api/peticija/findPeticija")
-        .then((data) => {
-          console.log({ data });
-          setPeticije(data.data);
-        });
-    }
+    const u = JSON.parse(localStorage.getItem("user"));
+    setUser(u);
+  }, []);
+
+  useEffect(() => {
     getPeticije();
   }, []);
 
-  const Search = styled("div")(({ theme }) => ({
+  const zapratiTag = (tag) => {
+    
+  }
+
+  async function getPeticije(filter = "") {
+    await axios
+      .get("http://localhost:3005/api/peticija/findPeticija" + filter)
+      .then((data) => {
+        console.log(data.data);
+        setPeticije(data.data);
+      });
+  }
+  const seacrhPeticija = (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const filter = "?tag=" + data.get("filter");
+    console.log(filter);
+    getPeticije(filter);
+  };
+
+  const Search = styled("form")(({ theme }) => ({
     position: "relative",
     borderRadius: theme.shape.borderRadius,
     backgroundColor: alpha(theme.palette.common.white, 0.15),
@@ -74,19 +106,35 @@ const Peticija = () => {
     },
   }));
 
-  const prikaziVise = () => {};
-
   return (
     <Box>
-      <Box>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+          mt: "5%",
+        }}
+      >
         <Typography variant="h4" component="div">
           Peticije
         </Typography>
-        <Search>
+        {user && (
+          <Button
+            variant="contained"
+            onClick={() => {
+              handleOpen();
+            }}
+          >
+            Napravi Peticiju
+          </Button>
+        )}
+        <Search onSubmit={seacrhPeticija}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
           <StyledInputBase
+            name="filter"
             placeholder="Search…"
             inputProps={{ "aria-label": "search" }}
           />
@@ -112,11 +160,18 @@ const Peticija = () => {
                 sx={{ display: "flex", flexDirection: "column" }}
               >
                 <CardContent>
-                  <Typography variant="h5" component="div">
+                  <Typography variant="h4" component="div">
                     {p.naslov}
                   </Typography>
-                  <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                    {p.text.substring(0, 100)}
+                  <Box>
+                    {p.tag.map((t) => (
+                      <Tooltip title="Zaprati tag">
+                        <Button onClick={zapratiTag(t)}>{t}</Button>
+                      </Tooltip>
+                    ))}
+                  </Box>
+                  <Typography sx={{ mb: 1.5 }}>
+                    {p.text.substring(0, 500)}
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ flexGrow: "1", alignItems: "flex-end" }}>
@@ -124,7 +179,9 @@ const Peticija = () => {
                     fullWidth
                     variant="contained"
                     size="small"
-                    onClick={prikaziVise}
+                    onClick={() => {
+                      navigate(`/peticija/${p.naslov}`, { state: p });
+                    }}
                   >
                     Prikazi vise
                   </Button>
@@ -134,6 +191,9 @@ const Peticija = () => {
           </Card>
         ))}
       </Box>
+      <Dialog open={open} onClose={handleClose}>
+        <PeticijaForma />
+      </Dialog>
     </Box>
   );
 };

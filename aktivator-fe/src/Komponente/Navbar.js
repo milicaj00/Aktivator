@@ -8,10 +8,10 @@ import Typography from "@mui/material/Typography";
 import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import Container from "@mui/material/Container";
-import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
+import LoginIcon from '@mui/icons-material/Login';
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 
 const pages = [
@@ -24,6 +24,13 @@ function Navbar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [user, setUser] = React.useState(null);
+
+  const logout = () => {
+    localStorage.clear();
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  };
 
   React.useEffect(() => {
     const u = JSON.parse(localStorage.getItem("user"));
@@ -40,8 +47,19 @@ function Navbar() {
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
+  let navigate = useNavigate();
 
-  const handleCloseUserMenu = () => {
+  const handleCloseUserMenu = (setting) => {
+    console.log(setting);
+    if (setting === "Profil") {
+      navigate("../nalog", { replace: true });
+    } else {
+      localStorage.clear();
+      navigate("../pocetna");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    }
     setAnchorElUser(null);
   };
 
@@ -112,7 +130,7 @@ function Navbar() {
             variant="h5"
             noWrap
             component="a"
-            href=""
+            href="/pocetna"
             sx={{
               mr: 2,
               display: { xs: "flex", md: "none" },
@@ -138,13 +156,52 @@ function Navbar() {
               </Button>
             ))}
           </Box>
+          {/* mobilni desno kad korisnik nije ulogovan */}
+          {!user &&
+            <Box sx={{ flexGrow: 0, display: { xs: 'flex', md: 'none' } }}>
+              <Tooltip title="Login">
+                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, color: 'white' }}>
+                  <LoginIcon />
+                </IconButton>
+              </Tooltip>
+
+              <Menu
+                sx={{ mt: '45px' }}
+                id="menu-login"
+                anchorEl={anchorElUser}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                open={Boolean(anchorElUser)}
+                onClose={handleCloseUserMenu}
+              >
+                <NavLink to='/login' >
+                  <MenuItem key='Log in' onClick={handleCloseUserMenu}>
+                    <Typography textAlign="center"> Prijavi se</Typography>
+                  </MenuItem>
+                </NavLink>
+                <NavLink to='/signup' >
+                  <MenuItem key='Sign up' onClick={handleCloseUserMenu}>
+                    <Typography textAlign="center"> Registruj se</Typography>
+                  </MenuItem>
+                </NavLink>
+              </Menu>
+
+            </Box>
+          }
 
           <Box sx={{ flexGrow: 0 }}>
             {!user && (
               <Button
                 variant="contained"
                 color="secondary"
-                href="/"
+                href="/login"
                 sx={{ color: "white", display: { xs: "none", md: "inline" } }}
               >
                 Prijavi se
@@ -155,7 +212,7 @@ function Navbar() {
               <Button
                 variant="contained"
                 color="secondary"
-                href="/"
+                href="/signup"
                 sx={{
                   m: 1,
                   color: "white",

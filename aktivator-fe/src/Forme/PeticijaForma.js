@@ -30,19 +30,18 @@ const PeticijaForma = () => {
           notifyError("Doslo je do greske!");
         }
       });
-
-    
   };
   const notify = () => toast.success("Uspesno ste dodali peticiju!");
   const notifyError = (text) => toast.error(text);
 
   return (
-    <Box>
-      <Typography variant="h5" component="div" sx={{ textAlign: "center" }}>
-        Nova Peticija
-      </Typography>
+    <Box
+      className="cardCenter"
+      sx={{ gap: "1vh", padding: { sm: "10% 10%" }, alignItems: "stretch" }}
+    >
       <Box component="form" onSubmit={napraviPeticiju}>
         <TextField
+          sx={{ width: "100%", mb: "1vh" }}
           name="naslov"
           className="loginInp"
           label="Naslov"
@@ -51,6 +50,7 @@ const PeticijaForma = () => {
           size="small"
         />
         <TextField
+          sx={{ width: "100%", mb: "1vh" }}
           name="text"
           className="prelomi"
           label="Tekst"
@@ -66,6 +66,7 @@ const PeticijaForma = () => {
           title="Tagove odvojiti , bez razmaka"
         >
           <TextField
+            sx={{ width: "100%", mb: "1vh" }}
             name="tag"
             className="loginInp"
             label="Tagovi"
@@ -75,6 +76,7 @@ const PeticijaForma = () => {
           />
         </Tooltip>
         <TextField
+          sx={{ width: "100%", mb: "1vh" }}
           className="loginInp"
           type="file"
           onChange={(event) => {
@@ -83,7 +85,12 @@ const PeticijaForma = () => {
           color="primary"
           size="small"
         />
-        <Button size="small" variant="contained" type="submit">
+        <Button
+          sx={{ width: "100%", mb: "1vh" }}
+          size="small"
+          variant="contained"
+          type="submit"
+        >
           Dodaj Peticiju
         </Button>
       </Box>
