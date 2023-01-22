@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-// const redis_client = require("./ws.config.js");
+const redis_client = require("./ws.config.js");
+//const redis_client = require("./redis.config.js");
 const neo4j_client = require("./neo4j.config.js");
 
 const blogRoutes = require("./Routes/BlogRoutes");
