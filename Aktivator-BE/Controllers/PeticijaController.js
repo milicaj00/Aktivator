@@ -2,43 +2,8 @@ const neo4j_client = require("../neo4j.config.js");
 const Peticija = require("../Models/Peticija");
 const User = require("../Models/User");
 const Tag = require("../Models/Tag");
-
-exports.getAllPeticijas = async (req, res) => {
-    let session = neo4j_client.session();
-    try {
-        const p_res = await session
-            .run(
-                `MATCH (t:Tag)-[:TAGGED]->(n:Peticija)<-[:WRITTEN]-(u:User) RETURN (n) AS Peticija, (t) AS Tag, (u) AS User`
-            )
-            .then(result => {
-                let pomB = new Peticija();
-                return result.records.map(r => {
-                    const p = new Peticija();
-                    p.makePeticija(r.get("Peticija"));
-                    const t = new Tag();
-                    t.makeTag(r.get("Tag"));
-                    const u = new User();
-                    u.makeUser(r.get("User"));
-
-                    if (pomB.naslov === p.naslov) {
-                        pomB.tag.push(t.naziv);
-                    } else {
-                        pomB = p;
-                        pomB.tag.push(t.naziv);
-                        pomB.vlasnik = u.toShort();
-                    }
-                    return pomB;
-                });
-            });
-
-        const peticija_list = [...new Set(p_res)];
-        session.close();
-        return res.status(200).json(peticija_list);
-    } catch (err) {
-        session.close();
-        return res.status(500).json("Doslo je do greske");
-    }
-};
+const RedisPeticija = require("./RedisPeticija");
+const helpers = require("./helpers");
 
 exports.getSinglePeticija = async (req, res) => {
     if (!req.params.naslov || req.params.naslov === "") {
@@ -84,6 +49,8 @@ exports.getSinglePeticija = async (req, res) => {
         if (p_res.length !== 1) {
             return res.status(404).json({ message: "Peticija not found" });
         }
+
+        RedisPeticija.saveSinglePeticija(p_res[0]);
 
         return res.status(200).json(p_res[0]);
     } catch (err) {
@@ -162,6 +129,14 @@ exports.findPeticijas = async (req, res) => {
         }
 
         session.close();
+
+        RedisPeticija.savePeticijas(
+            found_peticijas,
+            req.query.tag,
+            req.query.user_name,
+            req.query.user_surname
+        );
+
         return res.status(200).json(found_peticijas);
     } catch (err) {
         session.close();
@@ -187,7 +162,6 @@ exports.editPeticija = async (req, res) => {
     let session = neo4j_client.session();
 
     try {
-
         const p_res = await session.run(
             // `MATCH (p:Peticija {naslov:$naslov})-[:SIGNED]->(u:User {email : $user_mail})
             // SET p.broj_potpisa = p.broj_potpisa+1 RETURN p AS Peticija`,
@@ -242,6 +216,10 @@ exports.editPeticija = async (req, res) => {
 
 exports.addPeticija = async (req, res) => {
     const { naslov, text, tag, user_mail } = req.body;
+    const pom = await helpers.makeImage(req.file, "Peticija " + naslov);
+    if (pom === false) {
+        return res.status(500).json({ message: "Doslo je do greske" });
+    }
 
     if (!naslov || naslov.length < 15) {
         return res.status(406).json({ message: "Naslov mora biti duzi od 15" });
@@ -296,10 +274,11 @@ exports.addPeticija = async (req, res) => {
         }
 
         await session.run(
-            "MERGE (n:Peticija {naslov: $naslov , text: $text, broj_potpisa:0 }) RETURN n.naslov",
+            "MERGE (n:Peticija {naslov: $naslov , text: $text, broj_potpisa:0, slika: $slika }) RETURN n.naslov",
             {
                 naslov: peticija.naslov,
-                text: peticija.text
+                text: peticija.text,
+                slika: "Peticija " + naslov
             }
         );
 

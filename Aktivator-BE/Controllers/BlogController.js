@@ -2,48 +2,15 @@ const neo4j_client = require("../neo4j.config.js");
 const Blog = require("../Models/Blog");
 const User = require("../Models/User");
 const Tag = require("../Models/Tag");
+const helpers = require("./helpers");
+const RedisBlogs = require("./RedisBlog");
 
-exports.getAllBlogs = async (req, res) => {
-    let session = neo4j_client.session();
-    try {
-        const p_res = await session
-            .run(
-                `MATCH (t:Tag)-[:TAGGED]->(n:Blog)<-[:WRITTEN]-(u:User) RETURN (n) AS Blog, (t) AS Tag, (u) AS User`
-            )
-            .then(result => {
-                let pomB = new Blog();
-                return result.records.map(r => {
-                    const p = new Blog();
-                    p.makeBlog(r.get("Blog"));
-                    const t = new Tag();
-                    t.makeTag(r.get("Tag"));
-                    const u = new User();
-                    u.makeUser(r.get("User"));
-
-                    if (pomB.naslov === p.naslov) {
-                        pomB.tag.push(t.naziv);
-                    } else {
-                        pomB = p;
-                        pomB.tag.push(t.naziv);
-                        pomB.vlasnik = u.toShort();
-                    }
-                    return pomB;
-                });
-            });
-
-        const blog_list = [...new Set(p_res)];
-        session.close();
-        return res.status(200).json(blog_list);
-    } catch (err) {
-        session.close();
-        return res.status(500).json(err);
-    }
-};
 
 exports.getSingleBlog = async (req, res) => {
     if (!req.params.naslov || req.params.naslov === "") {
         return res.status(406).json({ message: "Morate uneti naslov" });
     }
+
     let session = neo4j_client.session();
     try {
         const tags = await session
@@ -72,13 +39,13 @@ exports.getSingleBlog = async (req, res) => {
             )
             .then(result => {
                 return result.records.map(r => {
-                    const p = new Blog();
-                    p.makeBlog(r.get("Blog"));
+                    const b = new Blog();
+                    b.makeBlog(r.get("Blog"));
                     const user = new User();
                     user.makeUser(r.get("user"));
-                    p.vlasnik = user.toShort();
-                    p.tag = tags;
-                    return p;
+                    b.vlasnik = user.toShort();
+                    b.tag = tags;
+                    return b;
                 });
             });
 
@@ -86,6 +53,8 @@ exports.getSingleBlog = async (req, res) => {
         if (blogs.length !== 1) {
             return res.status(404).json({ message: "Blog not found" });
         }
+
+        RedisBlogs.saveSingleBlog(blogs[0]);
 
         return res.status(200).json(blogs[0]);
     } catch (err) {
@@ -165,6 +134,14 @@ exports.findBlogs = async (req, res) => {
         }
 
         session.close();
+
+        RedisBlogs.saveBlogs(
+            blog_list,
+            req.query.tag,
+            req.query.user_name,
+            req.query.user_surname
+        );
+
         return res.status(200).json(blog_list);
     } catch (err) {
         session.close();
@@ -173,7 +150,12 @@ exports.findBlogs = async (req, res) => {
 };
 
 exports.addBlog = async (req, res) => {
-    const { naslov, text, tag, user_mail } = req.body;
+    const { naslov, text, tag, user_email } = req.body;
+
+    const pom = await helpers.makeImage(req.file, "Blog " + naslov);
+    if (pom === false) {
+        return res.status(500).json({ message: "Doslo je do greske" });
+    }
 
     if (!naslov || naslov.length < 5) {
         return res.status(406).json({ message: "Naslov mora biti duzi od 5" });
@@ -184,7 +166,7 @@ exports.addBlog = async (req, res) => {
     if (!tag || tag === "") {
         return res.status(406).json({ message: "Morate uneti bar jedan tag" });
     }
-    if (!user_mail) {
+    if (!user_email) {
         return res.status(406).json({ message: "Nemas mail od usera" });
     }
 
@@ -228,20 +210,21 @@ exports.addBlog = async (req, res) => {
         }
 
         await session.run(
-            "MERGE (n:Blog {naslov: $naslov , text: $text }) RETURN n.naslov",
+            "MERGE (n:Blog {naslov: $naslov , text: $text, slika: $slika }) RETURN n.naslov",
             {
                 naslov: blog.naslov,
-                text: blog.text
+                text: blog.text,
+                slika: "Blog " + naslov
             }
         );
 
         await session.run(
             `MATCH (b:Blog), (u:User) 
-            WHERE b.naslov = $naslovBloga AND u.email = $user_mail
+            WHERE b.naslov = $naslovBloga AND u.email = $user_email
             CREATE (u)-[write:WRITTEN]->(b) RETURN b,u`,
             {
                 naslovBloga: blog.naslov,
-                user_mail: user_mail
+                user_email: user_email
             }
         );
 
