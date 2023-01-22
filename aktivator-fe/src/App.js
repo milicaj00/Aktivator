@@ -8,32 +8,34 @@ import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
 import BlogForma from "./Forme/BlogForma.js";
 import PeticijaForma from "./Forme/PeticijaForma.js";
+import Rute from "./Pocetna/Rute.js";
 
 function App() {
-  console.log("NESTO");
+    console.log("NESTO");
 
-  return (
-    <>
-      <ToastContainer
-        position="top-right"
-        autoClose={500}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-      <Navbar />
-      <LoginForma/>
-      <RegistracijaForma />
-      <BlogForma/>
-      <PeticijaForma/>
-      
-    </>
-  );
+    return (
+        <>
+            <ToastContainer
+                position="top-right"
+                autoClose={500}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+            <Navbar />
+            <LoginForma />
+            <RegistracijaForma />
+            <BlogForma />
+            <PeticijaForma />
+
+            <Rute />
+        </>
+    );
 }
 
 export default App;
