@@ -12,38 +12,40 @@ import Rute from "./Pocetna/Rute.js";
 import { BrowserRouter, Router } from "react-router-dom";
 
 function App() {
-  console.log("NESTO");
+    console.log("NESTO");
 
-  const logout = () => {
-    localStorage.clear();
-  };
+    const logout = () => {
+        localStorage.clear();
+    };
 
-  return (
-    <>
-      <ToastContainer
-        position="top-right"
-        autoClose={500}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-      <BrowserRouter>
-        <Navbar />
-        {/* <LoginForma />
+    return (
+        <>
+            <ToastContainer
+                position="top-right"
+                autoClose={500}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+            <BrowserRouter>
+                <Navbar />
+                <LoginForma />
+                <RegistracijaForma />
+                {/* <LoginForma />
         <RegistracijaForma />
         <BlogForma />
         <PeticijaForma />
         <Button onClick={logout}> Izloguj se</Button> */}
 
-        <Rute />
-      </BrowserRouter>
-    </>
-  );
+                <Rute />
+            </BrowserRouter>
+        </>
+    );
 }
 
 export default App;
