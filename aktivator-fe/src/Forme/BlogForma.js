@@ -38,22 +38,22 @@ const BlogForma = () => {
   const notifyError = (text) => toast.error(text);
 
   return (
-    <Box>
-      <Typography variant="h5" component="div" sx={{ textAlign: "center" }}>
-        Novi Blog
-      </Typography>
+    <Box
+      className="cardCenter"
+      sx={{ gap: "1vh", padding: { sm: "10% 10%" }, alignItems: "stretch" }}
+    >
       <Box component="form" onSubmit={napraviBlog}>
         <TextField
+          sx={{ width: "100%", mb: "1vh" }}
           name="naslov"
-          className="loginInp"
           label="Naslov"
           type="text"
           color="primary"
           size="small"
         />
         <TextField
+          sx={{ width: "100%", mb: "1vh" }}
           name="text"
-          className="prelomi"
           label="Tekst"
           type="text"
           color="primary"
@@ -67,8 +67,8 @@ const BlogForma = () => {
           title="Tagove odvojiti , bez razmaka"
         >
           <TextField
+            sx={{ width: "100%", mb: "1vh" }}
             name="tag"
-            className="loginInp"
             label="Tagovi"
             type="text"
             color="primary"
@@ -76,7 +76,7 @@ const BlogForma = () => {
           />
         </Tooltip>
         <TextField
-          className="loginInp"
+          sx={{ width: "100%", mb: "1vh" }}
           onChange={(event) => {
             setSlika(event.target.files[0]);
           }}
@@ -84,7 +84,12 @@ const BlogForma = () => {
           color="primary"
           size="small"
         />
-        <Button size="small" variant="contained" type="submit">
+        <Button
+          sx={{ width: "100%", mb: "1vh" }}
+          size="small"
+          variant="contained"
+          type="submit"
+        >
           Dodaj Blog
         </Button>
       </Box>

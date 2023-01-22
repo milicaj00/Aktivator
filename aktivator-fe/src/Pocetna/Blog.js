@@ -1,84 +1,208 @@
+import React from "react";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import {
+  Button,
+  Card,
+  CardMedia,
+  CardActions,
+  CardContent,
+  Grid,
+  Typography,
+  Box,
+  InputBase,
+  Dialog,
+  Tooltip,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import { styled, alpha } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
+import BlogForma from "../Forme/BlogForma";
+
+const PUTANJA = "http://localhost:3005/";
+
 const Blog = () => {
-    // let navigate = useNavigate()
+  const [blogovi, setBlog] = useState([]);
+  const [user, setUser] = useState(null);
+  const [open, setOpen] = useState(false);
 
-    // const [nizBlogova, setBlogovi] = useState([])
-    // const [greska, setGreska] = useState(false)
-    // const [isLoading, setIsLoading] = useState(false)
+  let navigate = useNavigate();
 
-    // const [naslov, setNaslov] = useState('Zdravlje')
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
-    // useEffect(() => {
-    //     GetData("http://localhost:8800/api/blog/VratiBlogTag/" + naslov, setBlogovi, setGreska, setIsLoading)
-    // }, [naslov])
+  const handleClose = () => {
+    setOpen(false);
+  };
 
-    // return (
-    //     <Box className="cardCenter marginS">
+  useEffect(() => {
+    const u = JSON.parse(localStorage.getItem("user"));
+    setUser(u);
+  }, []);
 
-    //         <ToggleButtonGroup
-    //             exclusive
-    //             fullWidth
-    //             onChange={(ev) => { setNaslov(ev.target.value) }}
-    //             value={naslov}
-    //             sx={{ display: { xs: 'none', sm: 'flex', md: 'flex' }, justifyContent: 'space-around', mb: '5%' }}>
-    //             <ToggleButton value='Zdravlje' color='primary'>Zdravlje</ToggleButton>
-    //             <ToggleButton value='Ishrana' color='primary' >Ishrana</ToggleButton>
-    //             <ToggleButton value='Trening' color='primary'>Trening</ToggleButton>
-    //             <ToggleButton value='Fitness' color='primary'>Fitnes</ToggleButton>
-    //         </ToggleButtonGroup>
-    //         <FormControl focused fullWidth sx={{ maxWidth: 345, display: { xs: 'flex', sm: 'none' }, mb: '5%' }}>
-    //             <Select
-    //                 onChange={(ev) => { setNaslov(ev.target.value) }}
-    //                 value={naslov}
-    //             >
-    //                 <MenuItem value='Zdravlje'>Zdravlje</MenuItem>
-    //                 <MenuItem value='Ishrana'>Ishrana</MenuItem>
-    //                 <MenuItem value='Trening'>Trening</MenuItem>
-    //                 <MenuItem value='Fitness'>Fitness</MenuItem>
-    //             </Select>
-    //         </FormControl>
+  useEffect(() => {
+    getBlog();
+  }, []);
 
-    //         {isLoading && <CircularProgress size='2rem' disableShrink />}
+  const zapratiTag = (tag) => {};
 
-    //         {/* <Typography variant="h4" component="div" sx ={{margin: '2% 0%', display:{xs:'none', md:'block'}}}>{naslov}</Typography> */}
+  async function getBlog(filter = "") {
+    await axios
+      .get("http://localhost:3005/api/blog/findBlog" + filter)
+      .then((data) => {
+        console.log("http://localhost:3005/api/blog/findBlog" + filter);
+        console.log(data.data);
+        setBlog(data.data);
+      });
+  }
+  const seacrhBlog = (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const filter = "?tag=" + data.get("filter");
+    console.log(filter);
+    getBlog(filter);
+  };
 
-    //         {greska && <p className='greska'>Doslo je do greske</p>}
+  const Search = styled("form")(({ theme }) => ({
+    position: "relative",
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
+    "&:hover": {
+      backgroundColor: alpha(theme.palette.common.white, 0.25),
+    },
+    marginLeft: 0,
+    width: "100%",
+    [theme.breakpoints.up("sm")]: {
+      marginLeft: theme.spacing(1),
+      width: "auto",
+    },
+  }));
 
-    //         <Grid container className='blogovi' spacing={2} justify="flex-start"
-    //             alignItems="flex-start">
-    //             {nizBlogova
-    //                 .map((usl, i) => (
-    //                     <Grid key={i} item xs={12} sm={6} md={4}
-    //                         className='cardCenter'
-    //                         onClick={() => {
-    //                             navigate(`/blog/${usl.tagovi}/${usl.naslov}`, { state: usl });
-    //                         }}>
+  const SearchIconWrapper = styled("div")(({ theme }) => ({
+    padding: theme.spacing(0, 2),
+    height: "100%",
+    position: "absolute",
+    pointerEvents: "none",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  }));
 
-    //                         <Card className="blog" sx={{ maxWidth: 345 }} >
-    //                             <CardActionArea>
-    //                                 <CardMedia
-    //                                     component="img"
-    //                                     // image={usl.slika}
-    //                                     crossOrigin="anonymous"
-    //                                     src={PUTANJA + usl.slika}
-    //                                     alt={usl.naslov}
-    //                                 />
-    //                                 <CardContent>
-    //                                     <Typography gutterBottom variant="h5" component="div">
-    //                                         {usl.naslov}
-    //                                     </Typography>
-    //                                     <Typography variant="body2" color="text.secondary">
-    //                                         {usl.kratakopis}
-    //                                     </Typography>
-    //                                 </CardContent>
-    //                             </CardActionArea>
-    //                         </Card>
-    //                     </Grid>
-    //                 ))}
-    //         </Grid>
-    //     </Box >
-    // )
+  const StyledInputBase = styled(InputBase)(({ theme }) => ({
+    color: "inherit",
+    "& .MuiInputBase-input": {
+      padding: theme.spacing(1, 1, 1, 0),
+      paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+      transition: theme.transitions.create("width"),
+      width: "100%",
+      [theme.breakpoints.up("sm")]: {
+        width: "12ch",
+        "&:focus": {
+          width: "20ch",
+        },
+      },
+    },
+  }));
 
-    return <div>Blog</div>;
+  return (
+    <Box>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+          mt: "5%",
+        }}
+      >
+        <Typography variant="h4" component="div">
+          Blog
+        </Typography>
+        {user && (
+          <Button
+            variant="contained"
+            onClick={() => {
+              handleOpen();
+            }}
+          >
+            Napravi Blog
+          </Button>
+        )}
+        <Search onSubmit={seacrhBlog}>
+          <SearchIconWrapper>
+            <SearchIcon />
+          </SearchIconWrapper>
+          <StyledInputBase
+            name="filter"
+            placeholder="Search…"
+            inputProps={{ "aria-label": "search" }}
+          />
+        </Search>
+      </Box>
+      <Box>
+        {blogovi.map((b, i) => (
+          <Card key={i} className="marginS">
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={4}>
+                <CardMedia
+                  sx={{ maxHeight: "50vh" }}
+                  component="img"
+                  crossorigin="anonymous"
+                  src={PUTANJA + b.slika}
+                  alt={b.naziv}
+                  className="pImg"
+                />
+              </Grid>
+              <Grid
+                item
+                xs={12}
+                md={8}
+                sx={{ display: "flex", flexDirection: "column" }}
+              >
+                <CardContent>
+                  <Typography variant="h4" component="div">
+                    {b.naslov}
+                  </Typography>
+                  <Typography
+                    sx={{ mb: 1.5 }}
+                    variant="body2"
+                    color="text.secondary"
+                  >
+                    {b.vlasnik.name} {b.vlasnik.surname}
+                  </Typography>
+                  <Box>
+                    {b.tag.map((t) => (
+                      <Tooltip title="Zaprati tag">
+                        <Button onClick={zapratiTag(t)}>{t}</Button>
+                      </Tooltip>
+                    ))}
+                  </Box>
+                  <Typography sx={{ mb: 1.5 }}>
+                    {b.text.substring(0, 500)}
+                  </Typography>
+                </CardContent>
+                <CardActions sx={{ flexGrow: "1", alignItems: "flex-end" }}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    size="small"
+                    onClick={() => {
+                      navigate(`/blog/${b.naslov}`, { state: b });
+                    }}
+                  >
+                    Prikazi vise
+                  </Button>
+                </CardActions>
+              </Grid>
+            </Grid>
+          </Card>
+        ))}
+      </Box>
+      <Dialog open={open} onClose={handleClose}>
+        <BlogForma />
+      </Dialog>
+    </Box>
+  );
 };
 
 export default Blog;

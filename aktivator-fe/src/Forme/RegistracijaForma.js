@@ -12,7 +12,7 @@ const RegistracijaForma = () => {
         name: data.get("ime"),
         surname: data.get("prezime"),
         email: data.get("email"),
-        password: data.get("password"),
+        password: data.get("lozinka"),
       })
       .then((res) => {
         if (res.status === 200) {
@@ -36,12 +36,16 @@ const RegistracijaForma = () => {
   const notifyError = (text) => toast.error(text);
 
   return (
-    <Box>
+    <Box
+      className="cardCenter"
+      sx={{ gap: "1vh", padding: { sm: "10% 10%" }, alignItems: "stretch" }}
+    >
       <Typography variant="h5" component="div" sx={{ textAlign: "center" }}>
-        Registrujte se:
+        Registracija
       </Typography>
-      <Box component="form" onSubmit={registruj}>
+      <Box sx={{ padding: "0% 20%" }} component="form" onSubmit={registruj}>
         <TextField
+          sx={{ width: "100%", mb: "1vh" }}
           name="ime"
           className="loginInp"
           label="Ime"
@@ -50,6 +54,7 @@ const RegistracijaForma = () => {
           size="small"
         />
         <TextField
+          sx={{ width: "100%", mb: "1vh" }}
           name="prezime"
           className="loginInp"
           label="Prezime"
@@ -58,6 +63,7 @@ const RegistracijaForma = () => {
           size="small"
         />
         <TextField
+          sx={{ width: "100%", mb: "1vh" }}
           name="email"
           className="loginInp"
           label="Email"
@@ -66,6 +72,7 @@ const RegistracijaForma = () => {
           size="small"
         />
         <TextField
+          sx={{ width: "100%", mb: "1vh" }}
           name="lozinka"
           className="loginInp"
           label="Lozinka"
@@ -74,7 +81,12 @@ const RegistracijaForma = () => {
           color="primary"
           size="small"
         />
-        <Button size="small" variant="contained" type="submit">
+        <Button
+          sx={{ width: "100%", mb: "1vh" }}
+          size="small"
+          variant="contained"
+          type="submit"
+        >
           Registruj se
         </Button>
       </Box>

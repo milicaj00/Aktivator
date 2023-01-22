@@ -113,7 +113,7 @@ exports.log_in = async (req, res) => {
 
                 if (!validPassword) {
                     return res
-                        .status(402)
+                        .status(406)
                         .json({ message: "losa sifra brabo" });
                 }
 

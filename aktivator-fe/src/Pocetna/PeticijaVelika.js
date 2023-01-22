@@ -9,6 +9,7 @@ import {
   Box,
   Button,
   Dialog,
+  Tooltip,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 
@@ -36,16 +37,20 @@ const PeticijaVelika = () => {
     setUser(u);
   }, []);
 
+  async function getPeticija() {
+    return await axios
+      .get("http://localhost:3005/api/peticija/singlePeticija/" + naslov)
+      .then((data) => {
+        setPeticija(data.data);
+        console.log(data.data);
+      });
+  }
   useEffect(() => {
-    async function getPeticija() {
-      return await axios
-        .get("http://localhost:3005/api/peticija/singlePeticija/" + naslov)
-        .then((data) => data);
-    }
-    const b = getPeticija();
-    setPeticija(b);
+    getPeticija();
     console.log(peticija);
   }, []);
+
+  const zapratiTag = (tag) => {};
 
   const potpisiPeticiju = async () => {
     console.log("NASLOV:");
@@ -88,9 +93,9 @@ const PeticijaVelika = () => {
     <Box>
       <Card className="marginS">
         <Grid container spacing={2}>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={12}>
             <CardMedia
-              sx={{ maxHeight: "50vh" }}
+              sx={{ maxHeight: "30vh" }}
               component="img"
               crossorigin="anonymous"
               // src={PUTANJA + tr.slika}
@@ -101,32 +106,25 @@ const PeticijaVelika = () => {
           <Grid
             item
             xs={12}
-            md={8}
+            md={12}
             sx={{ display: "flex", flexDirection: "column" }}
           >
             <CardContent>
-              <Typography variant="h5" component="div">
-                {naslov}
+              <Typography
+                variant="h4"
+                component="div"
+                sx={{ textAlign: "center" }}
+              >
+                {peticija?.naslov}
               </Typography>
-              <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                {/* {tr.opis} */}
-                "But I must explain to you how all this mistaken idea of
-                denouncing pleasure and praising pain was born and I will give
-                you a complete account of the system, and expound the actual
-                teachings of the great explorer of the truth, the master-builder
-                of human happiness. No one rejects, dislikes, or avoids pleasure
-                itself, because it is pleasure, but because those who do not
-                know how to pursue pleasure rationally encounter consequences
-                that are extremely painful. Nor again is there anyone who loves
-                or pursues or desires to obtain pain of itself, because it is
-                pain, but because occasionally circumstances occur in which toil
-                and pain can procure him some great pleasure. To take a trivial
-                example, which of us ever undertakes laborious physical
-                exercise, except to obtain some advantage from it? But who has
-                any right to find fault with a man who chooses to enjoy a
-                pleasure that has no annoying consequences, or one who avoids a
-                pain that produces no resultant pleasure?"
-              </Typography>
+              <Box className = "cardCenter">
+                {peticija?.tag.map((t) => (
+                  <Tooltip title="Zaprati tag">
+                    <Button onClick={zapratiTag(t)}>{t}</Button>
+                  </Tooltip>
+                ))}
+              </Box> 
+              <Typography sx={{ mb: 1.5, ml:1.5, mr:1.5, textAlign: 'justify' }}>{peticija?.text} </Typography>
             </CardContent>
             <CardActions sx={{ flexGrow: "1", alignItems: "flex-end" }}>
               <Button
