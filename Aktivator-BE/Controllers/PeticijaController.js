@@ -145,7 +145,7 @@ exports.findPeticijas = async (req, res) => {
 };
 
 exports.editPeticija = async (req, res) => {
-    const { naslov, user_name, user_surname, user_mail } = req.body;
+    const { naslov, user_name, user_surname, user_email } = req.body;
 
     if (!naslov || naslov.length < 5) {
         return res.status(406).json({ message: "Naslov mora biti duzi od 5" });
@@ -156,23 +156,23 @@ exports.editPeticija = async (req, res) => {
     if (!user_surname) {
         return res.status(406).json({ message: "Morate uneti prezime" });
     }
-    if (!user_mail) {
+    if (!user_email) {
         return res.status(406).json({ message: "Nemas mail od usera" });
     }
     let session = neo4j_client.session();
 
     try {
         const p_res = await session.run(
-            // `MATCH (p:Peticija {naslov:$naslov})-[:SIGNED]->(u:User {email : $user_mail})
+            // `MATCH (p:Peticija {naslov:$naslov})-[:SIGNED]->(u:User {email : $user_email})
             // SET p.broj_potpisa = p.broj_potpisa+1 RETURN p AS Peticija`,
             `MATCH (node:Peticija {naslov:$naslov}) 
-             WHERE NOT (node)-[:SIGNED]->(:User {email : $user_mail}) 
+             WHERE NOT (node)-[:SIGNED]->(:User {email : $user_email}) 
              SET node.broj_potpisa = node.broj_potpisa+1
              RETURN node AS Peticija`,
 
             {
                 naslov: naslov,
-                user_mail: user_mail
+                user_email: user_email
             }
         );
 
@@ -189,7 +189,7 @@ exports.editPeticija = async (req, res) => {
         await session.run(
             "MERGE (n:User {email: $email , name: $name , surname: $surname }) RETURN n",
             {
-                email: user_mail,
+                email: user_email,
                 name: user_name,
                 surname: user_surname
             }
@@ -197,11 +197,11 @@ exports.editPeticija = async (req, res) => {
 
         await session.run(
             `MATCH (b:Peticija), (u:User) 
-            WHERE b.naslov = $naslovPeticije AND u.email = $user_mail
+            WHERE b.naslov = $naslovPeticije AND u.email = $user_email
             MERGE (b)-[:SIGNED]->(u) RETURN b,u`,
             {
                 naslovPeticije: naslov,
-                user_mail: user_mail
+                user_email: user_email
             }
         );
 
@@ -215,7 +215,7 @@ exports.editPeticija = async (req, res) => {
 };
 
 exports.addPeticija = async (req, res) => {
-    const { naslov, text, tag, user_mail } = req.body;
+    const { naslov, text, tag, user_email } = req.body;
     const pom = await helpers.makeImage(req.file, "Peticija " + naslov);
     if (pom === false) {
         return res.status(500).json({ message: "Doslo je do greske" });
@@ -230,7 +230,7 @@ exports.addPeticija = async (req, res) => {
     if (!tag || tag === "") {
         return res.status(406).json({ message: "Morate uneti bar jedan tag" });
     }
-    if (!user_mail) {
+    if (!user_email) {
         return res.status(406).json({ message: "Nemas mail od usera" });
     }
 
@@ -284,11 +284,11 @@ exports.addPeticija = async (req, res) => {
 
         await session.run(
             `MATCH (b:Peticija), (u:User) 
-            WHERE b.naslov = $naslovPeticije AND u.email = $user_mail
+            WHERE b.naslov = $naslovPeticije AND u.email = $user_email
             MERGE (u)-[write:WRITTEN]->(b) RETURN b,u`,
             {
                 naslovPeticije: peticija.naslov,
-                user_mail: user_mail
+                user_email: user_email
             }
         );
 

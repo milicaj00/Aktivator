@@ -10,7 +10,7 @@ router.get(
     Peticija.getSinglePeticija
 );
 router.get("/findPeticija", redisPeticija.getPeticijas, Peticija.findPeticijas);
-router.put("/editPeticija", Peticija.editPeticija);
+router.put("/addSignature", Peticija.editPeticija);
 router.delete("/deletePeticija/:naslov", Peticija.deletePeticija);
 router.post(
     "/addPeticija",
