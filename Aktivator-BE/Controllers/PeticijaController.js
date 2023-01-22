@@ -151,7 +151,7 @@ exports.editPeticija = async (req, res) => {
         return res.status(406).json({ message: "Naslov mora biti duzi od 5" });
     }
     if (!user_name) {
-        return res.status(406).json({ message: "morate unesti ime" });
+        return res.status(406).json({ message: "morate uneti ime" });
     }
     if (!user_surname) {
         return res.status(406).json({ message: "Morate uneti prezime" });
@@ -216,13 +216,13 @@ exports.editPeticija = async (req, res) => {
 
 exports.addPeticija = async (req, res) => {
     const { naslov, text, tag, user_email } = req.body;
-    const pom = await helpers.makeImage(req.file, "Peticija " + naslov);
-    if (pom === false) {
-        return res.status(500).json({ message: "Doslo je do greske" });
+
+    if (!req.file) {
+        return res.status(406).json({ message: "Morate uneti sliku" });
     }
 
-    if (!naslov || naslov.length < 15) {
-        return res.status(406).json({ message: "Naslov mora biti duzi od 15" });
+    if (!naslov || naslov.length < 5) {
+        return res.status(406).json({ message: "Naslov mora biti duzi od 5" });
     }
     if (!text || text.length < 15) {
         return res.status(406).json({ message: "text mora biti duzi od 15" });
@@ -232,6 +232,11 @@ exports.addPeticija = async (req, res) => {
     }
     if (!user_email) {
         return res.status(406).json({ message: "Nemas mail od usera" });
+    }
+
+    const pom = await helpers.makeImage(req.file, "Peticija " + naslov);
+    if (pom === false) {
+        return res.status(500).json({ message: "Doslo je do greske" });
     }
 
     let session = neo4j_client.session();

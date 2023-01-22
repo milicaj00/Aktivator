@@ -5,7 +5,6 @@ const Tag = require("../Models/Tag");
 const helpers = require("./helpers");
 const RedisBlogs = require("./RedisBlog");
 
-
 exports.getSingleBlog = async (req, res) => {
     if (!req.params.naslov || req.params.naslov === "") {
         return res.status(406).json({ message: "Morate uneti naslov" });
@@ -152,9 +151,8 @@ exports.findBlogs = async (req, res) => {
 exports.addBlog = async (req, res) => {
     const { naslov, text, tag, user_email } = req.body;
 
-    const pom = await helpers.makeImage(req.file, "Blog " + naslov);
-    if (pom === false) {
-        return res.status(500).json({ message: "Doslo je do greske" });
+    if (!req.file) {
+        return res.status(406).json({ message: "Morate uneti sliku" });
     }
 
     if (!naslov || naslov.length < 5) {
@@ -168,6 +166,12 @@ exports.addBlog = async (req, res) => {
     }
     if (!user_email) {
         return res.status(406).json({ message: "Nemas mail od usera" });
+    }
+
+    const pom = await helpers.makeImage(req.file, "Blog " + naslov);
+
+    if (pom === false) {
+        return res.status(500).json({ message: "Doslo je do greske" });
     }
 
     let session = neo4j_client.session();
