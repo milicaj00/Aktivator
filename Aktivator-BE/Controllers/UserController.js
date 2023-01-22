@@ -2,6 +2,7 @@ const neo4j_client = require("../neo4j.config.js");
 const User = require("../Models/User");
 const RedisUser = require("./RedisUser");
 const bcrypt = require("bcrypt");
+const Tag = require("../Models/Tag");
 
 exports.addUser = async (req, res) => {
     const { email, name, surname, password } = req.body;
@@ -15,7 +16,7 @@ exports.addUser = async (req, res) => {
     if (!surname || surname === "" || surname === " ") {
         return res.status(406).json({ message: "Morate uneti prezime" });
     }
-    if (password && password.length < 6) {
+    if (!password || password.length < 4) {
         return res
             .status(406)
             .json({ message: "Lozinka mora da bude duza od 6" });
@@ -83,7 +84,7 @@ exports.log_in = async (req, res) => {
         return res.status(406).json({ message: "nevalidan mail" });
     }
 
-    if (password && password.length < 4) {
+    if (!password || password.length < 4) {
         return res
             .status(406)
             .json({ message: "Lozinka mora da bude duza od 6" });
@@ -162,6 +163,79 @@ exports.getUser = async (req, res) => {
             .catch(err => {
                 return res.status(500).json(err);
             });
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+};
+
+exports.subscribe = async (req, res) => {
+    const { id, tag } = req.body;
+
+    const tags = tag.split(",");
+
+    if (!id) {
+        return res.status(406).json({ message: "fali ti id" });
+    }
+
+    if (!tag.length) {
+        return res.status(406).json({ message: "fale ti tagovi" });
+    }
+
+    //user exists ??
+    //tags exists ??
+
+    try {
+        let session = neo4j_client.session();
+
+        for (let i = 0; i < tags.length; i++) {
+            await session.run(
+                `MATCH (n:User), (t:Tag) 
+                WHERE elementId(n) = $id AND t.naziv = $nazivTaga
+                MERGE (n)-[:FOLLOW]->(t) RETURN n,t`,
+                {
+                    id: id,
+                    nazivTaga: tags[i]
+                }
+            );
+        }
+
+        session.close();
+        return res.status(200).json({ message: "success" });
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+};
+
+exports.get_subs = async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) {
+        return res.status(406).json({ message: "fali ti id" });
+    }
+
+    try {
+        let session = neo4j_client.session();
+
+        const tags = new Set([]);
+
+        await session
+            .run(
+                `MATCH ((t:Tag)<-[:FOLLOW]-(n:User WHERE elementId(n) = $id)) RETURN (t) as tags`,
+                {
+                    id: id
+                }
+            )
+            .then(result => {
+                result.records.forEach(r => {
+                    const tag = new Tag("");
+                    tag.makeTag(r.get("tags"));
+
+                    tags.add(tag.naziv);
+                });
+            });
+
+        session.close();
+        return res.status(200).json({ message: "success", data: [...tags] });
     } catch (err) {
         return res.status(500).json(err);
     }

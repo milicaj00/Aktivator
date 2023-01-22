@@ -4,6 +4,7 @@ const User = require("../Models/User");
 const Tag = require("../Models/Tag");
 const helpers = require("./helpers");
 const RedisBlogs = require("./RedisBlog");
+const redis_client = require("../redis.config.js");
 
 exports.getSingleBlog = async (req, res) => {
     if (!req.params.naslov || req.params.naslov === "") {
@@ -64,14 +65,8 @@ exports.getSingleBlog = async (req, res) => {
 };
 
 exports.findBlogs = async (req, res) => {
-    const tag_filter = req.query.tag
+    const filter = req.query.filter
         ? ".*" + req.query.tag.toLowerCase() + ".*"
-        : ".*";
-    const user_name_filter = req.query.user_name
-        ? ".*" + req.query.user_name.toLowerCase() + ".*"
-        : ".*";
-    const user_surname_filter = req.query.user_surname
-        ? ".*" + req.query.user_surname.toLowerCase() + ".*"
         : ".*";
 
     let session = neo4j_client.session();
@@ -82,9 +77,9 @@ exports.findBlogs = async (req, res) => {
                 <-[:WRITTEN]-(u:User WHERE toLower(u.name) =~ $userName AND toLower(u.surname) =~ $userSurname) 
                 RETURN (n) AS Blog, (t) AS Tag, (u) AS User`,
                 {
-                    nazivTaga: tag_filter,
-                    userName: user_name_filter,
-                    userSurname: user_surname_filter
+                    nazivTaga: filter,
+                    userName: filter,
+                    userSurname: filter
                 }
             )
             .then(result => {
@@ -111,6 +106,8 @@ exports.findBlogs = async (req, res) => {
 
         const blog_list = [...new Set(p_res)];
 
+        console.log({ blog_list });
+
         for (let i = 0; i < blog_list.length; i++) {
             const blog = blog_list[i];
             const tags = new Set(blog.tag);
@@ -136,7 +133,7 @@ exports.findBlogs = async (req, res) => {
 
         RedisBlogs.saveBlogs(
             blog_list,
-            req.query.tag,
+            req.query.filter,
             req.query.user_name,
             req.query.user_surname
         );
@@ -192,6 +189,17 @@ exports.addBlog = async (req, res) => {
             return res.status(406).json({ message: "Blog already exists" });
         }
 
+        const user_exsts = await session.run(
+            "MATCH (n:User {email: $email}) RETURN n AS User",
+            {
+                email: user_email
+            }
+        );
+
+        if (user_exsts.records.length === 0) {
+            return res.status(404).json({ message: "User doesn't exists" });
+        }
+
         const tag_res = await session.run(
             "MATCH (n:Tag) where n.naziv IN $naziv RETURN coalesce(n.naziv) as naziv, elementId(n) as id",
             {
@@ -214,7 +222,7 @@ exports.addBlog = async (req, res) => {
         }
 
         await session.run(
-            "MERGE (n:Blog {naslov: $naslov , text: $text, slika: $slika }) RETURN n.naslov",
+            "CREATE (n:Blog {naslov: $naslov , text: $text, slika: $slika }) RETURN n.naslov",
             {
                 naslov: blog.naslov,
                 text: blog.text,
@@ -225,7 +233,7 @@ exports.addBlog = async (req, res) => {
         await session.run(
             `MATCH (b:Blog), (u:User) 
             WHERE b.naslov = $naslovBloga AND u.email = $user_email
-            CREATE (u)-[write:WRITTEN]->(b) RETURN b,u`,
+            CREATE (u)-[:WRITTEN]->(b) RETURN b,u`,
             {
                 naslovBloga: blog.naslov,
                 user_email: user_email
@@ -243,6 +251,15 @@ exports.addBlog = async (req, res) => {
                 }
             );
         }
+
+        redis_client.publish(
+            "tag:user",
+            JSON.stringify({
+                tag: blog.tag,
+                naslov: blog.naslov,
+                message: "Novi blog"
+            })
+        );
 
         session.close();
         return res.status(200).json({ message: "success" });

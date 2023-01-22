@@ -61,14 +61,8 @@ exports.getSinglePeticija = async (req, res) => {
 };
 
 exports.findPeticijas = async (req, res) => {
-    const tag_filter = req.query.tag
-        ? ".*" + req.query.tag.toLowerCase() + ".*"
-        : ".*";
-    const user_name_filter = req.query.user_name
-        ? ".*" + req.query.user_name.toLowerCase() + ".*"
-        : ".*";
-    const user_surname_filter = req.query.user_surname
-        ? ".*" + req.query.user_surname.toLowerCase() + ".*"
+    const filter = req.query.filter
+        ? ".*" + req.query.filter.toLowerCase() + ".*"
         : ".*";
 
     let session = neo4j_client.session();
@@ -79,9 +73,9 @@ exports.findPeticijas = async (req, res) => {
                 <-[:WRITTEN]-(u:User WHERE toLower(u.name) =~ $userName AND toLower(u.surname) =~ $userSurname) 
                 RETURN (n) AS Peticija, (t) AS Tag, (u) AS User`,
                 {
-                    nazivTaga: tag_filter,
-                    userName: user_name_filter,
-                    userSurname: user_surname_filter
+                    nazivTaga: filter,
+                    userName: filter,
+                    userSurname: filter
                 }
             )
             .then(result => {
@@ -130,14 +124,7 @@ exports.findPeticijas = async (req, res) => {
 
         session.close();
 
-        console.log({found_peticijas})
-
-        RedisPeticija.savePeticijas(
-            found_peticijas,
-            req.query.tag,
-            req.query.user_name,
-            req.query.user_surname
-        );
+        RedisPeticija.savePeticijas(found_peticijas, req.query.filter);
 
         return res.status(200).json(found_peticijas);
     } catch (err) {
@@ -310,6 +297,15 @@ exports.addPeticija = async (req, res) => {
                 }
             );
         }
+
+        redis_client.publish(
+            "tag:user",
+            JSON.stringify({
+                tag: peticija.tag,
+                naslov: peticija.naslov,
+                message: "Nova peticija"
+            })
+        );
 
         session.close();
         return res.status(200).json({ message: "success" });
