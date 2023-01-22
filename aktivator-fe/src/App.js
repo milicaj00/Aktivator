@@ -10,7 +10,7 @@ import { BrowserRouter, Router } from "react-router-dom";
 import React, { useEffect } from "react";
 
 function App() {
-  console.log("NESTO");
+    console.log("NESTO");
 
   const [user, setUser] = React.useState(null);
 
@@ -19,23 +19,25 @@ function App() {
     setUser(u);
   }, []);
 
-  return (
-    <>
-      <ToastContainer
-        position="top-right"
-        autoClose={500}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-      <BrowserRouter>
-        <Navbar />
-        {/* <LoginForma />
+    return (
+        <>
+            <ToastContainer
+                position="top-right"
+                autoClose={500}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+            <BrowserRouter>
+                <Navbar />
+                <LoginForma />
+                <RegistracijaForma />
+                {/* <LoginForma />
         <RegistracijaForma />
         <BlogForma />
         <PeticijaForma />

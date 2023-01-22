@@ -148,7 +148,6 @@ const Peticija = () => {
                 <CardMedia
                   sx={{ maxHeight: "50vh" }}
                   component="img"
-                  crossorigin="anonymous"
                   src={PUTANJA + p.slika}
                   alt={p.naziv}
                   className="pImg"
