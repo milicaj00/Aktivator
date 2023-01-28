@@ -17,6 +17,8 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import PotpisForma from "../Forme/PotpisForma";
 
+const PUTANJA = "http://localhost:3005/";
+
 const PeticijaVelika = () => {
   let { naslov } = useParams();
 
@@ -54,11 +56,12 @@ const PeticijaVelika = () => {
 
   const potpisiPeticiju = async () => {
     console.log("NASLOV:");
-    console.log({ naslov });
+    console.log(peticija.naslov);
+    console.log(user)
     if (user != null) {
       await axios
         .put("http://localhost:3005/api/peticija/addSignature", {
-          naslov: naslov,
+          naslov: peticija.naslov,
           user_name: user.name,
           user_surname: user.surname,
           user_email: user.email,
@@ -95,10 +98,9 @@ const PeticijaVelika = () => {
         <Grid container spacing={2}>
           <Grid item xs={12} md={12}>
             <CardMedia
-              sx={{ maxHeight: "30vh" }}
+              sx={{ maxHeight: "50vh" }}
               component="img"
-              crossorigin="anonymous"
-              // src={PUTANJA + tr.slika}
+              src={PUTANJA + peticija?.slika}
               alt={naslov}
               className="trImg"
             />
@@ -117,14 +119,18 @@ const PeticijaVelika = () => {
               >
                 {peticija?.naslov}
               </Typography>
-              <Box className = "cardCenter">
+              <Box className="cardCenter" sx={{ flexDirection: "row" }}>
                 {peticija?.tag.map((t) => (
                   <Tooltip title="Zaprati tag">
                     <Button onClick={zapratiTag(t)}>{t}</Button>
                   </Tooltip>
                 ))}
-              </Box> 
-              <Typography sx={{ mb: 1.5, ml:1.5, mr:1.5, textAlign: 'justify' }}>{peticija?.text} </Typography>
+              </Box>
+              <Typography
+                sx={{ mb: 1.5, ml: 1.5, mr: 1.5, textAlign: "justify" }}
+              >
+                {peticija?.text}{" "}
+              </Typography>
             </CardContent>
             <CardActions sx={{ flexGrow: "1", alignItems: "flex-end" }}>
               <Button
@@ -142,7 +148,7 @@ const PeticijaVelika = () => {
         </Grid>
       </Card>
       <Dialog open={open} onClose={handleClose}>
-        <PotpisForma />
+        <PotpisForma naslov={peticija?.naslov} />
       </Dialog>
     </Box>
   );

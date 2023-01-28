@@ -21,7 +21,7 @@ import PeticijaForma from "../Forme/PeticijaForma";
 
 const PUTANJA = "http://localhost:3005/";
 
-const Peticija = () => {
+const Peticija = ({ filterKorisnik = "", mojePeticije = "" }) => {
   const [peticije, setPeticije] = useState([]);
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
@@ -39,15 +39,10 @@ const Peticija = () => {
   useEffect(() => {
     const u = JSON.parse(localStorage.getItem("user"));
     setUser(u);
-  }, []);
-
-  useEffect(() => {
     getPeticije();
   }, []);
 
-  const zapratiTag = (tag) => {
-    
-  }
+  const zapratiTag = (tag) => {};
 
   async function getPeticije(filter = "") {
     await axios
@@ -60,7 +55,7 @@ const Peticija = () => {
   const seacrhPeticija = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const filter = "?tag=" + data.get("filter");
+    const filter = "?filter=" + data.get("filter");
     console.log(filter);
     getPeticije(filter);
   };
@@ -117,7 +112,7 @@ const Peticija = () => {
         }}
       >
         <Typography variant="h4" component="div">
-          Peticije
+          {mojePeticije.length !== 0 && "Moje"} Peticije
         </Typography>
         {user && (
           <Button
@@ -150,7 +145,7 @@ const Peticija = () => {
                   component="img"
                   src={PUTANJA + p.slika}
                   alt={p.naziv}
-                  className="pImg"
+                  className="trImg"
                 />
               </Grid>
               <Grid

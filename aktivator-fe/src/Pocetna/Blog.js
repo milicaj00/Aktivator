@@ -147,10 +147,9 @@ const Blog = () => {
                 <CardMedia
                   sx={{ maxHeight: "50vh" }}
                   component="img"
-                  crossorigin="anonymous"
                   src={PUTANJA + b.slika}
                   alt={b.naziv}
-                  className="pImg"
+                  className="trImg"
                 />
               </Grid>
               <Grid
@@ -171,8 +170,8 @@ const Blog = () => {
                     {b.vlasnik.name} {b.vlasnik.surname}
                   </Typography>
                   <Box>
-                    {b.tag.map((t) => (
-                      <Tooltip title="Zaprati tag">
+                    {b.tag.map((t, i) => (
+                      <Tooltip key={i} title="Zaprati tag">
                         <Button onClick={zapratiTag(t)}>{t}</Button>
                       </Tooltip>
                     ))}

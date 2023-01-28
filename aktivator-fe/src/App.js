@@ -35,8 +35,6 @@ function App() {
             />
             <BrowserRouter>
                 <Navbar />
-                <LoginForma />
-                <RegistracijaForma />
                 {/* <LoginForma />
         <RegistracijaForma />
         <BlogForma />

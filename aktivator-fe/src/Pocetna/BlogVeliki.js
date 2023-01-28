@@ -15,7 +15,6 @@ const BlogVeliki = () => {
             component="img"
             className="trImg"
             // image={blog.slika}
-            crossOrigin="anonymous"
             src="https://srd-pescenica.hr/wp-content/uploads/2016/03/Savica-8.jpg"
             alt={naslov}
             height="250"

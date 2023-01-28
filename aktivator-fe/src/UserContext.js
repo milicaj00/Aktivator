@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import useWebSocket, { ReadyState } from "react-use-websocket";
 import { toast } from "react-toastify";
 
 const WS_URL = "ws://127.0.0.1:3400";
@@ -59,7 +58,6 @@ const UserContext = ({ children }) => {
 
     return (
         <div>
-            UserContext
             {children}
         </div>
     );
