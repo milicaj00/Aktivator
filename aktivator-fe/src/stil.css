@@ -1,3 +1,10 @@
+html,
+body {
+  height: 100vh;
+  margin: 0;
+  font-variant: small-caps;
+}
+
 .cardCenter {
   display: flex;
   flex-direction: column;
@@ -43,4 +50,36 @@ a {
   min-height: 100%;
   min-width: 100%;
   object-fit: cover;
+}
+
+/* slika pozadina */
+.container {
+  background-image: url(https://gdb.rferl.org/00fa0000-0a00-0242-9185-08d9b72fccfa_w1023_r1_s.jpg);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  height: 100vh;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.poruka {
+  font-family: monospace;
+  font-size: 4em;
+  font-weight: 600;
+  /* letter-spacing: -2px; */
+  color: white;
+  border: 1px black;
+  background-clip: text;
+  -webkit-background-clip: text;
+  text-transform: uppercase;
+  margin-top: 1vh;
+}
+
+.pozadinaPoruka {
+  width: 100%;
+  background-color: #0000007a;
+  padding-bottom: 1%;
 }

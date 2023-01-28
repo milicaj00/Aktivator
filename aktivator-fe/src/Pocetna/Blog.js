@@ -13,6 +13,7 @@ import {
   InputBase,
   Dialog,
   Tooltip,
+  Divider,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { styled, alpha } from "@mui/material/styles";
@@ -139,6 +140,7 @@ const Blog = () => {
           />
         </Search>
       </Box>
+      <Divider sx={{ m: "1vh 5vw" }}></Divider>
       <Box>
         {blogovi.map((b, i) => (
           <Card key={i} className="marginS">

@@ -16,7 +16,7 @@ const Rute = ({ user }) => {
       <Route path="/" element={<Pocetna />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/peticija" element={<Peticija />} />
-      <Route path="/nalog" element={<Nalog />} />
+      <Route path="/nalog" element={ user ? <Nalog /> : <Navigate replace to="/" />} />
       <Route path="/blog/:naslov" element={<BlogVeliki />} />
       <Route path="/peticija/:naslov" element={<PeticijaVelika />} />
       <Route path='/login' element=

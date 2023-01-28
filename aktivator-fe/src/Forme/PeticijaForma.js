@@ -1,7 +1,16 @@
-import { Button, TextField, Box, Typography, Tooltip } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Box,
+  IconButton,
+  Tooltip,
+  Badge,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
+import HelpIcon from "@mui/icons-material/Help";
 
 const PeticijaForma = () => {
   const [slika, setSlika] = useState("");
@@ -39,6 +48,9 @@ const PeticijaForma = () => {
       className="cardCenter"
       sx={{ gap: "1vh", padding: { sm: "10% 10%" }, alignItems: "stretch" }}
     >
+      <Typography className="cardCenter" variant="h4">
+        Nova Peticija
+      </Typography>
       <Box component="form" onSubmit={napraviPeticiju}>
         <TextField
           sx={{ width: "100%", mb: "1vh" }}
@@ -60,21 +72,29 @@ const PeticijaForma = () => {
           multiline
           rows={10}
         />
-        <Tooltip
-          disableFocusListener
-          placement="bottom"
-          title="Tagove odvojiti , bez razmaka"
+        <Badge
+          sx={{ width: "100%", mb: "1vh" }}
+          badgeContent={
+            <IconButton>
+              <HelpIcon color="secondary"> </HelpIcon>
+            </IconButton>
+          }
         >
-          <TextField
-            sx={{ width: "100%", mb: "1vh" }}
-            name="tag"
-            className="loginInp"
-            label="Tagovi"
-            type="text"
-            color="primary"
-            size="small"
-          />
-        </Tooltip>
+          <Tooltip
+            placement="right-start"
+            title="Tagove odvojiti zapetom ( , ) bez razmaka!"
+          >
+            <TextField
+              fullWidth
+              name="tag"
+              className="loginInp"
+              label="Tagovi"
+              type="text"
+              color="primary"
+              size="small"
+            />
+          </Tooltip>
+        </Badge>
         <TextField
           sx={{ width: "100%", mb: "1vh" }}
           className="loginInp"
