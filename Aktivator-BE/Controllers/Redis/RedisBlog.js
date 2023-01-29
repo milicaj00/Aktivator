@@ -1,17 +1,20 @@
 const redis_client = require("../../redis.config");
 
 exports.getBlogs = async (req, res, next) => {
-    const redis_res = await redis_client.get("blog_filter:" + req.query.filter);
 
-    if (redis_res?.length > 0) {
-        console.log("redis blog");
-        return res.status(200).send(JSON.parse(redis_res));
-    }
+    if (req.query.filter) {
+        const redis_res = await redis_client.get(
+            "blog_filter:" + req.query.filter
+        );
 
-    const redis_all_blogs = await redis_client.get("all_blogs");
-    if (redis_all_blogs?.length > 0) {
-        // console.log({redis_all_blogs})
-        return res.status(200).send(JSON.parse(redis_all_blogs));
+        if (redis_res?.length > 0) {
+            return res.status(200).send(JSON.parse(redis_res));
+        }
+    } else {
+        const redis_all_blogs = await redis_client.get("all_blogs");
+        if (redis_all_blogs?.length > 0) {
+            return res.status(200).send(JSON.parse(redis_all_blogs));
+        }
     }
 
     next();

@@ -47,10 +47,12 @@ exports.getSinglePeticija = async (req, res) => {
                         user.makeUser(r.get("user"));
                         p.vlasnik = user.toShort();
                     }
-
+                    // console.log(p)
                     const tag = new Tag("");
-                    tag.makeTag(r.get("tag"));
-                    p.tag.push(tag);
+                    tag.makeTag(r.get("Tag"));
+
+                    console.log({ tag });
+                    p.tag.push(tag.naziv);
                 });
                 return p;
             });
@@ -78,7 +80,7 @@ exports.findPeticijas = async (req, res) => {
     const filter = req.query.filter
         ? ".*" + req.query.filter.toLowerCase() + ".*"
         : ".*";
-
+        
     let session = neo4j_client.session();
     try {
         const p_res = await session

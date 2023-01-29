@@ -54,7 +54,7 @@ exports.getSingleBlog = async (req, res) => {
                     }
                     const tag = new Tag("");
                     tag.makeTag(r.get("tag"));
-                    b.tag.push(tag);
+                    b.tag.push(tag.naziv);
                 });
                 return b;
             });
@@ -77,7 +77,7 @@ exports.getSingleBlog = async (req, res) => {
 
 exports.findBlogs = async (req, res) => {
     const filter = req.query.filter
-        ? ".*" + req.query.tag.toLowerCase() + ".*"
+        ? ".*" + req.query.filter.toLowerCase() + ".*"
         : ".*";
 
     let session = neo4j_client.session();
@@ -244,7 +244,6 @@ exports.addBlog = async (req, res) => {
         );
 
         for (let i = 0; i < blog.tag.length; i++) {
-            
             await session.run(
                 `MATCH (b:Blog), (t:Tag) 
                 WHERE b.naslov = $naslovBloga AND t.naziv = $nazivTaga

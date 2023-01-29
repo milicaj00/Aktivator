@@ -9,7 +9,9 @@ router.get(
     redisPeticija.getSinglePeticija,
     Peticija.getSinglePeticija
 );
-router.get("/findPeticija", redisPeticija.getPeticijas, Peticija.findPeticijas);
+router.get("/findPeticija",
+ redisPeticija.getPeticijas, 
+ Peticija.findPeticijas);
 
 router.put("/addSignature", Peticija.editPeticija);
 router.delete("/deletePeticija/:naslov", Peticija.deletePeticija);

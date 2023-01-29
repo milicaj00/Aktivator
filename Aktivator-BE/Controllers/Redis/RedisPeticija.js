@@ -1,21 +1,21 @@
 const redis_client = require("../../redis.config");
 
 exports.getPeticijas = async (req, res, next) => {
-    const redis_res = await redis_client.get(
-        "peticija_filter:" + req.query.tag
-    );
+    if (!req.query.filter) {
+        const redis_all_peticijas = await redis_client.get("all_peticijas");
+        if (redis_all_peticijas?.length > 0) {
+            return res.status(200).send(JSON.parse(redis_all_peticijas));
+        }
+    } else {
+        const redis_res = await redis_client.get(
+            "peticija_filter:" + req.query.filter
+        );
 
-    //  console.log("get peticija " + req.query.tag);
-    if (redis_res?.length > 0) {
-        return res.status(200).send(JSON.parse(redis_res));
+        if (redis_res?.length > 0) {
+          
+            return res.status(200).send(JSON.parse(redis_res));
+        }
     }
-
-    const redis_all_peticijas = await redis_client.get("all_peticijas");
-    //  console.log({ redis_all_peticijas });
-    if (redis_all_peticijas?.length > 0) {
-        return res.status(200).send(JSON.parse(redis_all_peticijas));
-    }
-
     next();
 };
 
