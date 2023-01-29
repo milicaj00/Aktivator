@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Peticija = require("../Controllers/PeticijaController");
-const redisPeticija = require("../Controllers/RedisPeticija");
+const redisPeticija = require("../Controllers/Redis/RedisPeticija");
 const helpers = require("../Controllers/helpers");
 
 router.get(
@@ -10,6 +10,7 @@ router.get(
     Peticija.getSinglePeticija
 );
 router.get("/findPeticija", redisPeticija.getPeticijas, Peticija.findPeticijas);
+
 router.put("/addSignature", Peticija.editPeticija);
 router.delete("/deletePeticija/:naslov", Peticija.deletePeticija);
 router.post(
@@ -17,6 +18,5 @@ router.post(
     helpers.upload.single("slika"),
     Peticija.addPeticija
 );
-
 
 module.exports = router;

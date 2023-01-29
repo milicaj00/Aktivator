@@ -1,6 +1,5 @@
 const redis = require("redis");
-
-const redis_client = redis.createClient(6379);
+const redis_client = redis.createClient(process.env.REDIS_PORT);
 
 (async () => {
     redis_client.on("ready", () => console.log("Redis is ready."));

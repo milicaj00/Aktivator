@@ -1,10 +1,10 @@
 const neo4j_client = require("../neo4j.config.js");
+const RedisPeticija = require("./Redis/RedisPeticija");
+const helpers = require("./helpers");
+const redis_client = require("../redis.config.js");
 const Peticija = require("../Models/Peticija");
 const User = require("../Models/User");
 const Tag = require("../Models/Tag");
-const RedisPeticija = require("./RedisPeticija");
-const helpers = require("./helpers");
-const redis_client = require("../redis.config.js");
 
 exports.getSinglePeticija = async (req, res) => {
     if (!req.params.naslov || req.params.naslov === "") {
@@ -12,48 +12,61 @@ exports.getSinglePeticija = async (req, res) => {
     }
     let session = neo4j_client.session();
     try {
-        const tags = await session
-            .run(
-                `MATCH ((t:Tag)--(:Peticija {naslov:$naslov})) RETURN (t) as tags`,
-                {
-                    naslov: req.params.naslov
-                }
-            )
-            .then(result => {
-                return result.records.map(r => {
-                    const tag = new Tag("");
-                    tag.makeTag(r.get("tags"));
-                    return tag.naziv;
-                });
-            });
+        // const tags = await session
+        //     .run(
+        //         `MATCH ((t:Tag)--(:Peticija {naslov:$naslov})) RETURN (t) as tags`,
+        //         {
+        //             naslov: req.params.naslov
+        //         }
+        //     )
+        //     .then(result => {
+        //         return result.records.map(r => {
+        //             const tag = new Tag("");
+        //             tag.makeTag(r.get("tags"));
+        //             return tag.naziv;
+        //         });
+        //     });
 
         const p_res = await session
             .run(
-                `MATCH ((n:Peticija {naslov:$naslov})<-[:WRITTEN]-(u:User)) RETURN (n) AS peticija, (u) as user`,
+                `MATCH ((t:Tag)--(n:Peticija {naslov:$naslov})<-[:WRITTEN]-(u:User)) RETURN (n) AS peticija, (u) as user, (t) AS Tag`,
                 {
                     naslov: req.params.naslov
                 }
             )
             .then(result => {
-                return result.records.map(r => {
-                    const p = new Peticija();
-                    p.makePeticija(r.get("peticija"));
-                    const user = new User();
-                    user.makeUser(r.get("user"));
-                    p.vlasnik = user.toShort();
-                    p.tag = tags;
-                    return p;
+                let p = null;
+                let user = null;
+                result.records.map(r => {
+                    if (!p) {
+                        p = new Peticija();
+                        p.makePeticija(r.get("peticija"));
+                    }
+                    if (!user) {
+                        user = new User();
+                        user.makeUser(r.get("user"));
+                        p.vlasnik = user.toShort();
+                    }
+
+                    const tag = new Tag("");
+                    tag.makeTag(r.get("tag"));
+                    p.tag.push(tag);
                 });
+                return p;
             });
 
         session.close();
-        if (p_res.length !== 1) {
+        // if (p_res.length !== 1) {
+        //     return res.status(404).json({ message: "Peticija not found" });
+        // }
+
+        if (!p_res) {
             return res.status(404).json({ message: "Peticija not found" });
         }
 
-        RedisPeticija.saveSinglePeticija(p_res[0]);
+        RedisPeticija.saveSinglePeticija(p_res);
 
-        return res.status(200).json(p_res[0]);
+        return res.status(200).json(p_res);
     } catch (err) {
         session.close();
 
@@ -75,8 +88,8 @@ exports.findPeticijas = async (req, res) => {
                 RETURN (n) AS Peticija, (t) AS Tag, (u) AS User`,
                 {
                     nazivTaga: filter,
-                    userName: filter,
-                    userSurname: filter
+                    userName: ".*",
+                    userSurname: ".*"
                 }
             )
             .then(result => {
@@ -236,7 +249,6 @@ exports.addPeticija = async (req, res) => {
         peticija.text = text;
         peticija.tag = tag.split(",");
 
-      
         const peticija_exsts = await session.run(
             `MATCH (n:Peticija {naslov: $naslov }) RETURN n.naslov`,
             {
@@ -278,15 +290,20 @@ exports.addPeticija = async (req, res) => {
             }
         );
 
-        await session.run(
-            `MATCH (b:Peticija), (u:User) 
+        const user = new User();
+        await session
+            .run(
+                `MATCH (b:Peticija), (u:User) 
             WHERE b.naslov = $naslovPeticije AND u.email = $user_email
-            MERGE (u)-[write:WRITTEN]->(b) RETURN b,u`,
-            {
-                naslovPeticije: peticija.naslov,
-                user_email: user_email
-            }
-        );
+            MERGE (u)-[write:WRITTEN]->(b) RETURN (u) AS User`,
+                {
+                    naslovPeticije: peticija.naslov,
+                    user_email: user_email
+                }
+            )
+            .then(result => {
+                user.makeUser(result.records[0].get("User"));
+            });
 
         for (let i = 0; i < peticija.tag.length; i++) {
             await session.run(
@@ -299,14 +316,15 @@ exports.addPeticija = async (req, res) => {
                 }
             );
         }
+        RedisPeticija.deleteAllPeticijas();
 
-   
         redis_client.publish(
             "tag:user",
             JSON.stringify({
                 tag: peticija.tag,
                 naslov: peticija.naslov,
-                message: "Nova peticija "
+                message: "Nova peticija ",
+                userId: user.id
             })
         );
 
@@ -330,6 +348,7 @@ exports.deletePeticija = async (req, res) => {
                 naslov: req.params.naslov
             }
         );
+        RedisPeticija.deleteAllPeticijas();
         session.close();
         return res.status(200).json({ message: "Ide gas" });
     } catch (err) {

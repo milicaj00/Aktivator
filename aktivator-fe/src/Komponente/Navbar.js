@@ -11,7 +11,7 @@ import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
-import LoginIcon from '@mui/icons-material/Login';
+import LoginIcon from "@mui/icons-material/Login";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 
 const pages = [
@@ -55,7 +55,7 @@ function Navbar() {
       navigate("../nalog", { replace: true });
     } else {
       localStorage.clear();
-      navigate("../pocetna");
+      navigate("../");
       setTimeout(() => {
         window.location.reload();
       }, 1000);
@@ -64,7 +64,7 @@ function Navbar() {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" color="secondary">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           {/* veliki */}
@@ -72,7 +72,7 @@ function Navbar() {
             variant="h6"
             noWrap
             component="a"
-            href="/pocetna"
+            href="/"
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },
@@ -130,7 +130,7 @@ function Navbar() {
             variant="h5"
             noWrap
             component="a"
-            href="/pocetna"
+            href="/"
             sx={{
               mr: 2,
               display: { xs: "flex", md: "none" },
@@ -157,50 +157,51 @@ function Navbar() {
             ))}
           </Box>
           {/* mobilni desno kad korisnik nije ulogovan */}
-          {!user &&
-            <Box sx={{ flexGrow: 0, display: { xs: 'flex', md: 'none' } }}>
+          {!user && (
+            <Box sx={{ flexGrow: 0, display: { xs: "flex", md: "none" } }}>
               <Tooltip title="Login">
-                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, color: 'white' }}>
+                <IconButton
+                  onClick={handleOpenUserMenu}
+                  sx={{ p: 0, color: "white" }}
+                >
                   <LoginIcon />
                 </IconButton>
               </Tooltip>
 
               <Menu
-                sx={{ mt: '45px' }}
+                sx={{ mt: "45px" }}
                 id="menu-login"
                 anchorEl={anchorElUser}
                 anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
+                  vertical: "top",
+                  horizontal: "right",
                 }}
                 keepMounted
                 transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
+                  vertical: "top",
+                  horizontal: "right",
                 }}
                 open={Boolean(anchorElUser)}
                 onClose={handleCloseUserMenu}
               >
-                <NavLink to='/login' >
-                  <MenuItem key='Log in' onClick={handleCloseUserMenu}>
+                <NavLink to="/login">
+                  <MenuItem key="Log in" onClick={handleCloseUserMenu}>
                     <Typography textAlign="center"> Prijavi se</Typography>
                   </MenuItem>
                 </NavLink>
-                <NavLink to='/signup' >
-                  <MenuItem key='Sign up' onClick={handleCloseUserMenu}>
+                <NavLink to="/signup">
+                  <MenuItem key="Sign up" onClick={handleCloseUserMenu}>
                     <Typography textAlign="center"> Registruj se</Typography>
                   </MenuItem>
                 </NavLink>
               </Menu>
-
             </Box>
-          }
+          )}
 
           <Box sx={{ flexGrow: 0 }}>
             {!user && (
               <Button
                 variant="contained"
-                color="secondary"
                 href="/login"
                 sx={{ color: "white", display: { xs: "none", md: "inline" } }}
               >
@@ -211,7 +212,6 @@ function Navbar() {
             {!user && (
               <Button
                 variant="contained"
-                color="secondary"
                 href="/signup"
                 sx={{
                   m: 1,

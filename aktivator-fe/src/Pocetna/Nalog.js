@@ -1,9 +1,17 @@
-import React from 'react'
+import { Box } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { getMojiBlogovi } from "../api";
+import Peticija from "./Peticija";
 
 const Nalog = () => {
-  return (
-    <div>Nalog</div>
-  )
-}
+    const [user, setUser] = useState(null);
+    useEffect(() => {
+        const u = JSON.parse(localStorage.getItem("user"));
+        setUser(u);
+        getMojiBlogovi(null)
+    }, []);
 
-export default Nalog
+    return <Box>{user && <Peticija users={true} mojePeticije="Moje" />}</Box>;
+};
+
+export default Nalog;

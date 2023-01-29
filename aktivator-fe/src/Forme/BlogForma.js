@@ -1,7 +1,15 @@
-import { Button, TextField, Box, Typography, Tooltip } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Box,
+  Badge,
+  IconButton,
+  Tooltip,Typography
+} from "@mui/material";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useState } from "react";
+import HelpIcon from "@mui/icons-material/Help";
 
 const BlogForma = () => {
   const [slika, setSlika] = useState("");
@@ -42,6 +50,9 @@ const BlogForma = () => {
       className="cardCenter"
       sx={{ gap: "1vh", padding: { sm: "10% 10%" }, alignItems: "stretch" }}
     >
+      <Typography className="cardCenter" variant="h4">
+        Novi Blog
+      </Typography>
       <Box component="form" onSubmit={napraviBlog}>
         <TextField
           sx={{ width: "100%", mb: "1vh" }}
@@ -61,20 +72,29 @@ const BlogForma = () => {
           multiline
           rows={10}
         />
-        <Tooltip
-          disableFocusListener
-          placement="bottom"
-          title="Tagove odvojiti , bez razmaka"
+        <Badge
+          sx={{ width: "100%", mb: "1vh" }}
+          badgeContent={
+            <IconButton>
+              <HelpIcon color="secondary"> </HelpIcon>
+            </IconButton>
+          }
         >
-          <TextField
-            sx={{ width: "100%", mb: "1vh" }}
-            name="tag"
-            label="Tagovi"
-            type="text"
-            color="primary"
-            size="small"
-          />
-        </Tooltip>
+          <Tooltip
+            placement="right-start"
+            title="Tagove odvojiti zapetom ( , ) bez razmaka!"
+          >
+            <TextField
+              fullWidth
+              name="tag"
+              className="loginInp"
+              label="Tagovi"
+              type="text"
+              color="primary"
+              size="small"
+            />
+          </Tooltip>
+        </Badge>
         <TextField
           sx={{ width: "100%", mb: "1vh" }}
           onChange={(event) => {

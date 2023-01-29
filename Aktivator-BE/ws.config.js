@@ -1,8 +1,10 @@
 const redis_client = require("./redis.config");
 const WebSocket = require("ws");
 
-const WEB_SOCKET_PORT_CUSTOMER = 3400;
-const serverCustomer = new WebSocket.Server({ port: WEB_SOCKET_PORT_CUSTOMER });
+const serverCustomer = new WebSocket.Server({
+    port: process.env.WEB_SOCKET_PORT
+});
+
 var redisCustomer = redis_client.duplicate();
 redisCustomer.connect();
 
@@ -46,7 +48,7 @@ redisCustomer.SUBSCRIBE("tag:user", message => {
 const sendMessage = (message, client) => {
     for (let i = 0; i < message.tag.length; i++) {
         console.log(client.tag);
-        if (client.tag?.includes(message.tag[i])) {
+        if (client.id != message.id && client.tag?.includes(message.tag[i])) {
             client.send(JSON.stringify(message));
             break;
         }

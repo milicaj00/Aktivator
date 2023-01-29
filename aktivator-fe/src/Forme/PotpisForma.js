@@ -6,28 +6,37 @@ const PotpisForma = ({ naslov }) => {
   const login = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    data.append("naslov", naslov);
-
-    console.log(data.get("email"), data.get("password"));
+    console.log(
+      { naslov },
+      data.get("user_name"),
+      data.get("user_surname"),
+      data.get("user_email")
+    );
     await axios
-      .post("http://localhost:3005/api/peticija/addSignature", data)
+      .put("http://localhost:3005/api/peticija/addSignature", {
+        user_name: data.get("user_name"),
+        user_surname: data.get("user_surname"),
+        user_email: data.get("user_email"),
+        naslov: naslov,
+      })
       .then((res) => {
         console.log({ res });
         if (res.status === 200) {
           //IDE LOGIN NE ZNAM
           console.log("DOBROJE");
           notify();
-          // setTimeout(() => {
-          //   window.location.reload();
-          // }, 1000);
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
         }
       })
       .catch((error) => {
         if (error.response.status === 406) {
-          notifyError(error.response.message);
+          notifyError(error.response.data.message);
 
-          console.log(error.response.message);
+          console.log(error.response.data.message);
         } else {
+          console.log(error.response);
           notifyError("Doslo je do greske!");
         }
       });
@@ -36,14 +45,17 @@ const PotpisForma = ({ naslov }) => {
   const notifyError = (text) => toast.error(text);
 
   return (
-    <Box>
+    <Box
+      className="cardCenter"
+      sx={{ gap: "1vh", padding: { sm: "10% 10%" }, alignItems: "stretch" }}
+    >
       <Typography variant="h5" component="div" sx={{ textAlign: "center" }}>
         Potpisi
       </Typography>
-      <Box component="form" onSubmit={login}>
+      <Box sx={{ padding: "0% 20%" }} component="form" onSubmit={login}>
         <TextField
           name="user_name"
-          className="loginInp"
+          sx={{ width: "100%", mb: "1vh" }}
           label="Ime"
           type="text"
           color="primary"
@@ -51,7 +63,7 @@ const PotpisForma = ({ naslov }) => {
         />
         <TextField
           name="user_surname"
-          className="loginInp"
+          sx={{ width: "100%", mb: "1vh" }}
           label="Prezime"
           type="text"
           color="primary"
@@ -59,13 +71,18 @@ const PotpisForma = ({ naslov }) => {
         />
         <TextField
           name="user_email"
-          className="loginInp"
+          sx={{ width: "100%", mb: "1vh" }}
           label="Email"
           type="email"
           color="primary"
           size="small"
         />
-        <Button size="small" variant="contained" type="submit">
+        <Button
+          sx={{ width: "100%", mb: "1vh" }}
+          size="small"
+          variant="contained"
+          type="submit"
+        >
           Potpisi
         </Button>
       </Box>

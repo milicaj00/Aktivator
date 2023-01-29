@@ -2,17 +2,18 @@ import React from "react";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import {
-    Button,
-    Card,
-    CardMedia,
-    CardActions,
-    CardContent,
-    Grid,
-    Typography,
-    Box,
-    InputBase,
-    Dialog,
-    Tooltip
+  Button,
+  Card,
+  CardMedia,
+  CardActions,
+  CardContent,
+  Grid,
+  Typography,
+  Box,
+  InputBase,
+  Dialog,
+  Tooltip,
+  Divider,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { styled, alpha } from "@mui/material/styles";
@@ -176,7 +177,8 @@ const Blog = () => {
                     />
                 </Search>
             </Box>
-            <Box>
+            <Divider sx={{ m: "1vh 5vw" }}></Divider>
+      <Box>
                 {blogovi.map((b, i) => (
                     <Card key={i} className="marginS">
                         <Grid container spacing={2}>
@@ -184,10 +186,9 @@ const Blog = () => {
                                 <CardMedia
                                     sx={{ maxHeight: "50vh" }}
                                     component="img"
-                                    crossorigin="anonymous"
-                                    src={PUTANJA + b.slika}
+                                                      src={PUTANJA + b.slika}
                                     alt={b.naziv}
-                                    className="pImg"
+                                    className="trImg"
                                 />
                             </Grid>
                             <Grid
@@ -211,8 +212,8 @@ const Blog = () => {
                                         {b.vlasnik.name} {b.vlasnik.surname}
                                     </Typography>
                                     <Box>
-                                        {b.tag.map(t => (
-                                            <Tooltip title="Zaprati tag">
+                                        {b.tag.map((t, i) => (
+                                            <Tooltip key={i} title="Zaprati tag">
                                                 <Button
                                                     onClick={() =>
                                                         zapratiTag(t)

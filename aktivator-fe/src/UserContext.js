@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import useWebSocket, { ReadyState } from "react-use-websocket";
+// import useWebSocket, { ReadyState } from "react-use-websocket";
 import { toast } from "react-toastify";
 import axios from "axios";
 
@@ -15,27 +15,31 @@ const UserContext = ({ children }) => {
     const [data, setData] = useState("");
 
     useEffect(() => {
-        axios
-            .get("http://localhost:3005/api/user/get-subs/" + u.id)
-            .then(res => {
-                if (res.status === 200) {
-                    setData(res.data.data);
-                }
-            })
-            .catch(err => {
-                console.log(err.response);
-            });
+        if (u) {
+            axios
+                .get("http://localhost:3005/api/user/get-subs/" + u.id)
+                .then(res => {
+                    if (res.status === 200) {
+                        setData(res.data.data);
+                    }
+                })
+                .catch(err => {
+                    console.log(err.response);
+                });
+        }
     }, []);
 
     ws.onopen = event => {
-        const msg = {
-            id: u.id,
-            tag: data,
-            init: init
-        };
-        if (data && init) {
-            ws.send(JSON.stringify(msg));
-            init = false;
+        if (u) {
+            const msg = {
+                id: u.id,
+                tag: data,
+                init: init
+            };
+            if (data && init) {
+                ws.send(JSON.stringify(msg));
+                init = false;
+            }
         }
     };
 
@@ -74,12 +78,7 @@ const UserContext = ({ children }) => {
     //      sendMessage(JSON.stringify(msg), true);
     // }, [getWebSocket]);
 
-    return (
-        <div>
-            UserContext
-            {children}
-        </div>
-    );
+    return <div>{children}</div>;
 };
 
 export default UserContext;

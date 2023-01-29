@@ -1,8 +1,10 @@
 const neo4j_client = require("../neo4j.config.js");
-const User = require("../Models/User");
-const RedisUser = require("./RedisUser");
+const RedisUser = require("./Redis/RedisUser");
 const bcrypt = require("bcrypt");
+const User = require("../Models/User");
 const Tag = require("../Models/Tag");
+const Peticija = require("../Models/Peticija");
+const Blog = require("../Models/Blog");
 
 exports.addUser = async (req, res) => {
     const { email, name, surname, password } = req.body;
@@ -237,6 +239,130 @@ exports.get_subs = async (req, res) => {
         session.close();
         return res.status(200).json({ message: "success", data: [...tags] });
     } catch (err) {
+        return res.status(500).json(err);
+    }
+};
+
+exports.moje_peticije = async (req, res) => {
+    let { id } = req.params;
+
+    if (!id) {
+        return res.status(406).json({ message: "fali ti id" });
+    }
+
+    let session = neo4j_client.session();
+    try {
+        const p_res = await session
+            .run(
+                `MATCH (n:Peticija)<-[:WRITTEN]-(u:User WHERE elementId(u) = $id)
+                RETURN (n) AS Peticija, (u) AS User`,
+                {
+                    id: id
+                }
+            )
+            .then(result => {
+                return result.records.map(r => {
+                    const p = new Peticija();
+                    p.makePeticija(r.get("Peticija"));
+
+                    const u = new User();
+                    u.makeUser(r.get("User"));
+
+                    p.vlasnik = u.toShort();
+
+                    return p;
+                });
+            });
+
+        for (let i = 0; i < p_res.length; i++) {
+            const peticija = p_res[i];
+            const tags = new Set();
+            await session
+                .run(
+                    `MATCH ((t:Tag)--(:Peticija {naslov:$naslov})) RETURN (t) as tags`,
+                    {
+                        naslov: peticija.naslov
+                    }
+                )
+                .then(result => {
+                    result.records.forEach(r => {
+                        const tag = new Tag("");
+                        tag.makeTag(r.get("tags"));
+                        tags.add(tag.naziv);
+                    });
+                });
+
+            peticija.tag = [...tags];
+        }
+
+        session.close();
+
+        // RedisPeticija.savePeticijas(found_peticijas, req.query.filter);
+
+        return res.status(200).json(p_res);
+    } catch (err) {
+        session.close();
+        return res.status(500).json(err);
+    }
+};
+
+exports.moji_blogovi = async (req, res) => {
+    let { id } = req.params;
+
+    if (!id) {
+        return res.status(406).json({ message: "fali ti id" });
+    }
+
+    let session = neo4j_client.session();
+    try {
+        const b_res = await session
+            .run(
+                `MATCH (n:Blog)<-[:WRITTEN]-(u:User WHERE elementId(u) = $id)
+                RETURN (n) AS Blog, (u) AS User`,
+                {
+                    id: id
+                }
+            )
+            .then(result => {
+                return result.records.map(r => {
+                    const p = new Blog();
+                    p.makeBlog(r.get("Blog"));
+
+                    const u = new User();
+                    u.makeUser(r.get("User"));
+
+                    p.vlasnik = u.toShort();
+
+                    return p;
+                });
+            });
+
+        for (let i = 0; i < b_res.length; i++) {
+            const blog = b_res[i];
+            const tags = new Set();
+            await session
+                .run(
+                    `MATCH ((t:Tag)--(:Blog {naslov:$naslov})) RETURN (t) as tags`,
+                    {
+                        naslov: blog.naslov
+                    }
+                )
+                .then(result => {
+                    result.records.forEach(r => {
+                        const tag = new Tag("");
+                        tag.makeTag(r.get("tags"));
+                        tags.add(tag.naziv);
+                    });
+                });
+
+            blog.tag = [...tags];
+        }
+
+        session.close();
+
+        return res.status(200).json(b_res);
+    } catch (err) {
+        session.close();
         return res.status(500).json(err);
     }
 };

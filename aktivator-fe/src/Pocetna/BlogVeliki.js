@@ -2,7 +2,6 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import { Card, Grid, CardMedia, CardContent, Typography } from "@mui/material";
 
-
 //http://localhost:3000/api/blog/singleBlog/treci blog
 const BlogVeliki = () => {
   let { naslov } = useParams();
@@ -15,7 +14,6 @@ const BlogVeliki = () => {
             component="img"
             className="trImg"
             // image={blog.slika}
-            crossOrigin="anonymous"
             src="https://srd-pescenica.hr/wp-content/uploads/2016/03/Savica-8.jpg"
             alt={naslov}
             height="250"

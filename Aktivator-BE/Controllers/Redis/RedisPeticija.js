@@ -1,17 +1,17 @@
-const redis_client = require("../redis.config");
+const redis_client = require("../../redis.config");
 
 exports.getPeticijas = async (req, res, next) => {
     const redis_res = await redis_client.get(
         "peticija_filter:" + req.query.tag
     );
 
-    console.log("get peticija " + req.query.tag);
+    //  console.log("get peticija " + req.query.tag);
     if (redis_res?.length > 0) {
         return res.status(200).send(JSON.parse(redis_res));
     }
 
     const redis_all_peticijas = await redis_client.get("all_peticijas");
-    console.log({ redis_all_peticijas });
+    //  console.log({ redis_all_peticijas });
     if (redis_all_peticijas?.length > 0) {
         return res.status(200).send(JSON.parse(redis_all_peticijas));
     }
@@ -48,10 +48,35 @@ exports.getSinglePeticija = async (req, res, next) => {
 };
 
 exports.saveSinglePeticija = async peticija => {
-    console.log("save peticija");
+    //  console.log("save peticija");
     await redis_client.setEx(
         "single_peticija:" + peticija.naslov,
         3600,
         JSON.stringify(peticija)
     );
+};
+
+exports.deleteSinglePeticija = async naslov => {
+    const pre = await redis_client.get("single_peticija:" + naslov);
+    console.log({ pre });
+    await redis_client.del("single_peticija:" + naslov);
+
+    const posle = await redis_client.get("single_peticija:" + naslov);
+    console.log({ posle });
+};
+
+exports.deleteAllPeticijas = async () => {
+    const pre = await redis_client.get("all_peticijas");
+    console.log({ pre });
+    const keys = await redis_client.keys("peticija_filter*");
+    console.log({ keys });
+
+    keys.forEach(async k => {
+        await redis_client.del(k);
+    });
+
+    await redis_client.del("all_peticijas");
+
+    const posle = await redis_client.get("all_peticijas");
+    console.log({ posle });
 };

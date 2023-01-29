@@ -3,7 +3,7 @@ const Blog = require("../Models/Blog");
 const User = require("../Models/User");
 const Tag = require("../Models/Tag");
 const helpers = require("./helpers");
-const RedisBlogs = require("./RedisBlog");
+const RedisBlogs = require("./Redis/RedisBlog");
 const redis_client = require("../redis.config.js");
 
 exports.getSingleBlog = async (req, res) => {
@@ -13,50 +13,61 @@ exports.getSingleBlog = async (req, res) => {
 
     let session = neo4j_client.session();
     try {
-        const tags = await session
-            .run(
-                `MATCH ((t:Tag)--(:Blog {naslov:$naslov})) RETURN (t) as tags`,
-                {
-                    naslov: req.params.naslov
-                }
-            )
-            .then(result => {
-                return result.records.map(r => {
-                    const tag = new Tag("");
-                    tag.makeTag(r.get("tags"));
-                    return tag.naziv;
-                });
-            });
+        // const tags = await session
+        //     .run(
+        //         `MATCH ((t:Tag)--(:Blog {naslov:$naslov})) RETURN (t) as tags`,
+        //         {
+        //             naslov: req.params.naslov
+        //         }
+        //     )
+        //     .then(result => {
+        //         return result.records.map(r => {
+        //             const tag = new Tag("");
+        //             tag.makeTag(r.get("tags"));
+        //             return tag.naziv;
+        //         });
+        //     });
 
-        //START s=NODE(517) MATCH(s) RETURN s
-        const blogs = await session
+        const blog = await session
             .run(
-                `MATCH ((n:Blog {naslov:$naslov})<-[:WRITTEN]-(u:User)) RETURN (n) AS Blog, (u) as user`,
-                // "MATCH (n) WHERE elementId(n) = $naslov RETURN n AS Blog",
+                `MATCH ((t:Tag)-[:TAGGED]->(n:Blog {naslov:$naslov})<-[:WRITTEN]-(u:User)) 
+                RETURN (n) AS Blog, (u) as user, (t) as tag`,
                 {
                     naslov: req.params.naslov
                 }
             )
             .then(result => {
-                return result.records.map(r => {
-                    const b = new Blog();
-                    b.makeBlog(r.get("Blog"));
-                    const user = new User();
-                    user.makeUser(r.get("user"));
-                    b.vlasnik = user.toShort();
-                    b.tag = tags;
-                    return b;
+                if (!result.records[0]?.get("Blog")) {
+                    return null;
+                }
+                let b = null;
+                let user = null;
+                result.records.map(r => {
+                    if (b == null) {
+                        b = new Blog();
+                        b.makeBlog(r.get("Blog"));
+                    }
+                    if (user == null) {
+                        user = new User();
+                        user.makeUser(r.get("user"));
+                        b.vlasnik = user.toShort();
+                    }
+                    const tag = new Tag("");
+                    tag.makeTag(r.get("tag"));
+                    b.tag.push(tag);
                 });
+                return b;
             });
 
         session.close();
-        if (blogs.length !== 1) {
+
+        if (!blog) {
             return res.status(404).json({ message: "Blog not found" });
         }
 
-        RedisBlogs.saveSingleBlog(blogs[0]);
+        RedisBlogs.saveSingleBlog(blog);
 
-        return res.status(200).json(blogs[0]);
+        return res.status(200).json(blog);
     } catch (err) {
         session.close();
 
@@ -78,8 +89,8 @@ exports.findBlogs = async (req, res) => {
                 RETURN (n) AS Blog, (t) AS Tag, (u) AS User`,
                 {
                     nazivTaga: filter,
-                    userName: filter,
-                    userSurname: filter
+                    userName: ".*",
+                    userSurname: ".*"
                 }
             )
             .then(result => {
@@ -105,8 +116,6 @@ exports.findBlogs = async (req, res) => {
             });
 
         const blog_list = [...new Set(p_res)];
-
-        console.log({ blog_list });
 
         for (let i = 0; i < blog_list.length; i++) {
             const blog = blog_list[i];
@@ -146,7 +155,6 @@ exports.addBlog = async (req, res) => {
     if (!req.file) {
         return res.status(406).json({ message: "Morate uneti sliku" });
     }
-
     if (!naslov || naslov.length < 5) {
         return res.status(406).json({ message: "Naslov mora biti duzi od 5" });
     }
@@ -236,6 +244,7 @@ exports.addBlog = async (req, res) => {
         );
 
         for (let i = 0; i < blog.tag.length; i++) {
+            
             await session.run(
                 `MATCH (b:Blog), (t:Tag) 
                 WHERE b.naslov = $naslovBloga AND t.naziv = $nazivTaga
@@ -246,6 +255,8 @@ exports.addBlog = async (req, res) => {
                 }
             );
         }
+
+        RedisBlogs.deleteAllBlogs();
 
         redis_client.publish(
             "tag:user",
@@ -274,6 +285,7 @@ exports.deleteBlog = async (req, res) => {
             naslov: req.params.naslov
         });
         session.close();
+        RedisBlogs.deleteAllBlogs();
         return res.status(200).json({ message: "Ide gas" });
     } catch (err) {
         session.close();
