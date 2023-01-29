@@ -1,6 +1,6 @@
 const neo4j_client = require("../neo4j.config.js");
 const RedisUser = require("./Redis/RedisUser");
-const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const User = require("../Models/User");
 const Tag = require("../Models/Tag");
 const Peticija = require("../Models/Peticija");
@@ -48,17 +48,21 @@ exports.addUser = async (req, res) => {
                     .json({ message: "Vec si se registrovao bato" });
         }
 
-        const salt = await bcrypt.genSalt(16);
-        const hashedPassword = await bcrypt.hash(user.password, salt);
+        const salt = crypto.randomBytes(16).toString("hex");
+
+        const hashedPassword = crypto
+            .pbkdf2Sync(user.password, salt, 1000, 64, `sha512`)
+            .toString(`hex`);
 
         await session
             .run(
-                "MERGE (n:User {email: $email, name: $name, surname: $surname, password: $password }) RETURN n AS User",
+                "MERGE (n:User {email: $email, name: $name, surname: $surname, password: $password, salt: $salt }) RETURN n AS User",
                 {
                     email: email,
                     name: name,
                     surname: surname,
-                    password: hashedPassword
+                    password: hashedPassword,
+                    salt: salt
                 }
             )
             .then(data => {
@@ -109,53 +113,18 @@ exports.log_in = async (req, res) => {
                 const user = new User();
                 user.makeUser(data.records[0].get("User"));
 
-                const validPassword = await bcrypt.compare(
-                    password,
-                    user.password
-                );
+                const salt = data.records[0].get("User").properties.salt;
+                var hash = crypto
+                    .pbkdf2Sync(password, salt, 1000, 64, `sha512`)
+                    .toString(`hex`);
+
+                const validPassword = hash === user.password;
 
                 if (!validPassword) {
                     return res
                         .status(406)
                         .json({ message: "losa sifra brabo" });
                 }
-
-                RedisUser.saveUser(user);
-                return res
-                    .status(200)
-                    .json({ message: "success", data: user.toShort() });
-            })
-            .catch(err => {
-                return res.status(500).json(err);
-            });
-    } catch (err) {
-        return res.status(500).json(err);
-    }
-};
-
-exports.getUser = async (req, res) => {
-    const { id } = req.body;
-
-    if (!id) {
-        return res.status(406).json({ message: "fali ti id" });
-    }
-
-    try {
-        let session = neo4j_client.session();
-
-        await session
-            .run("MATCH (n:User WHERE elementId(n) = $id) RETURN n AS User", {
-                id: id
-            })
-            .then(data => {
-                session.close();
-
-                if (data.records.length === 0) {
-                    return res.status(404).json({ message: "user not found" });
-                }
-
-                const user = new User();
-                user.makeUser(data.records[0].get("User"));
 
                 RedisUser.saveUser(user);
                 return res
@@ -238,6 +207,34 @@ exports.get_subs = async (req, res) => {
 
         session.close();
         return res.status(200).json({ message: "success", data: [...tags] });
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+};
+
+exports.unfollow = async (req, res) => {
+    const { userId, tag } = req.body;
+
+    if (!userId) {
+        return res.status(406).json({ message: "fali ti id" });
+    }
+    if (!tag) {
+        return res.status(406).json({ message: "fali ti tag" });
+    }
+
+    try {
+        let session = neo4j_client.session();
+
+        await session.run(
+            `MATCH ((t:Tag {naziv: $tag})<-[r:FOLLOW]-(n:User WHERE elementId(n) = $id)) DELETE r`,
+            {
+                id: userId,
+                tag: tag
+            }
+        );
+
+        session.close();
+        return res.status(200).json({ message: "success" });
     } catch (err) {
         return res.status(500).json(err);
     }
