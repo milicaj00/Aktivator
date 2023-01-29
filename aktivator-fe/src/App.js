@@ -35,13 +35,7 @@ function App() {
             />
             <BrowserRouter>
                 <Navbar />
-                <LoginForma />
-                <RegistracijaForma />
-                {/* <LoginForma />
-        <RegistracijaForma />
-        <BlogForma />
-        <PeticijaForma />
-  */}
+              
         <Rute user={user} />
       </BrowserRouter>
     </>

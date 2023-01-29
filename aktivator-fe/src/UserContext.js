@@ -1,26 +1,43 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 const WS_URL = "ws://127.0.0.1:3400";
-
+let init = true;
 const UserContext = ({ children }) => {
-    const notify = message => toast(message);
+    const notify = message => toast(message, { autoClose: 5000 });
 
     const u = JSON.parse(localStorage.getItem("user"));
 
     const ws = new WebSocket(WS_URL);
 
+    const [data, setData] = useState("");
+
     useEffect(() => {
-        ws.onopen = event => {
-            const msg = {
-                id: u.id,
-                tag: "sport",
-                init: true
-            };
-            ws.send(JSON.stringify(msg));
-        };
+        axios
+            .get("http://localhost:3005/api/user/get-subs/" + u.id)
+            .then(res => {
+                if (res.status === 200) {
+                    setData(res.data.data);
+                }
+            })
+            .catch(err => {
+                console.log(err.response);
+            });
     }, []);
+
+    ws.onopen = event => {
+        const msg = {
+            id: u.id,
+            tag: data,
+            init: init
+        };
+        if (data && init) {
+            ws.send(JSON.stringify(msg));
+            init = false;
+        }
+    };
 
     ws.onmessage = function (event) {
         const mess = JSON.parse(event.data);

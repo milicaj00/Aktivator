@@ -18,11 +18,16 @@ serverCustomer.on("connection", async function connection(ws) {
             serverCustomer.clients.forEach(client => {
                 if (client.id === response.id) {
                     c = client;
-                    if (!client.tag.includes(response.tag))
-                        client.tag.push(response.tag);
+                    if (!client.tag?.includes(response.tag))
+                        if (client.tag) client.tag.push(response.tag);
+                        else {
+                            client.tag = [];
+                            client.tag.push(response.tag);
+                        }
                 }
             });
 
+            // console.log(response, c);
             if (!c) {
                 ws.id = response.id;
                 ws.tag = [response.tag];
@@ -40,6 +45,7 @@ redisCustomer.SUBSCRIBE("tag:user", message => {
 
 const sendMessage = (message, client) => {
     for (let i = 0; i < message.tag.length; i++) {
+        console.log(client.tag);
         if (client.tag?.includes(message.tag[i])) {
             client.send(JSON.stringify(message));
             break;

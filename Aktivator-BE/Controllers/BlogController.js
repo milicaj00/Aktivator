@@ -131,12 +131,7 @@ exports.findBlogs = async (req, res) => {
 
         session.close();
 
-        RedisBlogs.saveBlogs(
-            blog_list,
-            req.query.filter,
-            req.query.user_name,
-            req.query.user_surname
-        );
+        RedisBlogs.saveBlogs(blog_list, req.query.filter);
 
         return res.status(200).json(blog_list);
     } catch (err) {

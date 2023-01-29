@@ -4,6 +4,7 @@ const User = require("../Models/User");
 const Tag = require("../Models/Tag");
 const RedisPeticija = require("./RedisPeticija");
 const helpers = require("./helpers");
+const redis_client = require("../redis.config.js");
 
 exports.getSinglePeticija = async (req, res) => {
     if (!req.params.naslov || req.params.naslov === "") {
@@ -235,6 +236,7 @@ exports.addPeticija = async (req, res) => {
         peticija.text = text;
         peticija.tag = tag.split(",");
 
+      
         const peticija_exsts = await session.run(
             `MATCH (n:Peticija {naslov: $naslov }) RETURN n.naslov`,
             {
@@ -298,12 +300,13 @@ exports.addPeticija = async (req, res) => {
             );
         }
 
+   
         redis_client.publish(
             "tag:user",
             JSON.stringify({
                 tag: peticija.tag,
                 naslov: peticija.naslov,
-                message: "Nova peticija"
+                message: "Nova peticija "
             })
         );
 
