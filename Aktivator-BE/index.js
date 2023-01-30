@@ -36,3 +36,5 @@ app.listen(3005, () => {
 // start C:\neo4j-community-5.3.0\bin\neo4j console
 //http://localhost:7474
 //sifra aktivator
+
+//CALL apoc.export.cypher.all('',{format:'cypher-shell'})

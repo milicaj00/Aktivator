@@ -152,8 +152,8 @@ exports.subscribe = async (req, res) => {
         return res.status(406).json({ message: "fale ti tagovi" });
     }
 
-    //user exists ??
-    //tags exists ??
+    //user exists 
+    //tags exists 
 
     try {
         let session = neo4j_client.session();

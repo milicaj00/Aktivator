@@ -20,12 +20,24 @@ serverCustomer.on("connection", async function connection(ws) {
             serverCustomer.clients.forEach(client => {
                 if (client.id === response.id) {
                     c = client;
-                    if (!client.tag?.includes(response.tag))
+                    if (!client.tag?.includes(response.tag)) {
                         if (client.tag) client.tag.push(response.tag);
                         else {
                             client.tag = [];
                             client.tag.push(response.tag);
                         }
+                        client.send(
+                            JSON.stringify({
+                                message:
+                                    "Uspesno ste zapratili tag: " +
+                                    response.tag
+                            })
+                        );
+                    } else {
+                        client.send(
+                            JSON.stringify({ message: "Vec pratite taj tag" })
+                        );
+                    }
                 }
             });
 

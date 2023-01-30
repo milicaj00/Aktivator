@@ -47,9 +47,17 @@ const UserContext = ({ children }) => {
         const mess = JSON.parse(event.data);
         try {
             console.log({ mess });
-            notify(
-                mess.message + " " + mess.naslov + ", sa tagovima: " + mess.tag
-            );
+            if (mess.naslov) {
+                notify(
+                    mess.message +
+                        " " +
+                        mess.naslov +
+                        ", sa tagovima: " +
+                        mess.tag
+                );
+            } else {
+                notify(mess.message);
+            }
         } catch (err) {
             console.log(err);
         }
