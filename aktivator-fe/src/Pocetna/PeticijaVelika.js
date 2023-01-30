@@ -19,6 +19,7 @@ import PotpisForma from "../Forme/PotpisForma";
 import { getPeticija } from "../api";
 
 const PUTANJA = "http://localhost:3005/";
+const WS_URL = "ws://127.0.0.1:3400";
 
 const PeticijaVelika = () => {
   let { naslov } = useParams();
@@ -41,7 +42,39 @@ const PeticijaVelika = () => {
     getPeticija(naslov, setPeticija);
   }, []);
 
-  const zapratiTag = (tag) => {};
+  const zapratiTag = async (tag) => {
+    try {
+      const ws = new WebSocket(WS_URL);
+
+      ws.onopen = (event) => {
+        const msg = {
+          id: user.id,
+          tag: tag,
+          init: false,
+        };
+        ws.send(JSON.stringify(msg));
+      };
+    } catch (err) {
+      console.log(err);
+      notifyError("Doslo je do greske!");
+      return;
+    }
+
+    await axios
+      .put("http://localhost:3005/api/user/subscribe", {
+        id: user.id,
+        tag: tag,
+      })
+      .then((data) => {
+        if (data.status === 200) {
+          console.log("Uspesno ste zapratili tag: " + tag);
+        }
+      })
+      .catch((err) => {
+        console.log(err.response);
+        notifyError("Doslo je do greske!");
+      });
+  };
 
   const potpisiPeticiju = async () => {
     console.log("NASLOV:");
@@ -128,7 +161,7 @@ const PeticijaVelika = () => {
               >
                 {peticija?.tag.map((t, i) => (
                   <Tooltip key={i} title="Zaprati tag">
-                    <Button onClick={zapratiTag(t)}>{t}</Button>
+                    <Button onClick={()=>zapratiTag(t)}>{t}</Button>
                   </Tooltip>
                 ))}
               </Box>

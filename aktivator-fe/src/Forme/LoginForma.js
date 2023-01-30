@@ -28,7 +28,12 @@ const LoginForma = () => {
         if (error.response.status === 406) {
           notifyError(error.response.data.message);
           console.log(error.response.data.message);
-        } else {
+        } 
+        if (error.response.status === 404) {
+          notifyError(error.response.data.message);
+          console.log(error.response.data.message);
+        } 
+        else {
           notifyError("Doslo je do greske!");
         }
       });

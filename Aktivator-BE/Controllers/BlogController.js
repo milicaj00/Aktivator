@@ -233,15 +233,20 @@ exports.addBlog = async (req, res) => {
             }
         );
 
-        await session.run(
-            `MATCH (b:Blog), (u:User) 
+        const user = new User();
+        await session
+            .run(
+                `MATCH (b:Blog), (u:User) 
             WHERE b.naslov = $naslovBloga AND u.email = $user_email
-            CREATE (u)-[:WRITTEN]->(b) RETURN b,u`,
-            {
-                naslovBloga: blog.naslov,
-                user_email: user_email
-            }
-        );
+            CREATE (u)-[:WRITTEN]->(b) RETURN u AS User`,
+                {
+                    naslovBloga: blog.naslov,
+                    user_email: user_email
+                }
+            )
+            .then(result => {
+                user.makeUser(result.records[0].get("User"));
+            });
 
         for (let i = 0; i < blog.tag.length; i++) {
             await session.run(
@@ -262,7 +267,8 @@ exports.addBlog = async (req, res) => {
             JSON.stringify({
                 tag: blog.tag,
                 naslov: blog.naslov,
-                message: "Novi blog"
+                message: "Novi blog",
+                id: user.id
             })
         );
 

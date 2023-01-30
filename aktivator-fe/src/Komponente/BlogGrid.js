@@ -23,7 +23,7 @@ const WS_URL = "ws://127.0.0.1:3400";
 export const BlogGrid = ({ sBlogovi, blogovi, user, moje }) => {
   let navigate = useNavigate();
 
-  const notify = (message) => toast.success(message);
+
   const notifyError = (message) => toast.error(message);
 
   const zapratiTag = async (tag) => {
@@ -51,7 +51,7 @@ export const BlogGrid = ({ sBlogovi, blogovi, user, moje }) => {
       })
       .then((data) => {
         if (data.status === 200) {
-          notify("Uspesno ste zapratili tag: " + tag);
+          console.log("Uspesno ste zapratili tag: " + tag);
         }
       })
       .catch((err) => {

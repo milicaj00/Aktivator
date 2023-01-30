@@ -320,18 +320,18 @@ exports.addPeticija = async (req, res) => {
                 }
             );
         }
-        RedisPeticija.deleteAllPeticijas();
-
+        
         redis_client.publish(
             "tag:user",
             JSON.stringify({
                 tag: peticija.tag,
                 naslov: peticija.naslov,
                 message: "Nova peticija ",
-                userId: user.id
+                id: user.id
             })
         );
 
+        RedisPeticija.deleteAllPeticijas();
         session.close();
         return res.status(200).json({ message: "success" });
     } catch (err) {

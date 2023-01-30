@@ -29,8 +29,7 @@ serverCustomer.on("connection", async function connection(ws) {
                         client.send(
                             JSON.stringify({
                                 message:
-                                    "Uspesno ste zapratili tag: " +
-                                    response.tag
+                                    "Uspesno ste zapratili tag: " + response.tag
                             })
                         );
                     } else {
@@ -52,17 +51,20 @@ serverCustomer.on("connection", async function connection(ws) {
 
 redisCustomer.SUBSCRIBE("tag:user", message => {
     let msg = JSON.parse(message);
+    console.log(msg);
+    console.log(serverCustomer.clients);
     serverCustomer.clients.forEach(function each(client) {
         sendMessage(msg, client);
     });
 });
 
 const sendMessage = (message, client) => {
-    for (let i = 0; i < message.tag.length; i++) {
+    let send = false;
+    for (let i = 0; i < message.tag.length && !send; i++) {
         console.log(client.tag);
         if (client.id != message.id && client.tag?.includes(message.tag[i])) {
             client.send(JSON.stringify(message));
-            break;
+            send = true;
         }
     }
 };

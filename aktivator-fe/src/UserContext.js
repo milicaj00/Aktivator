@@ -80,7 +80,7 @@ const UserContext = ({ children }) => {
     //     console.log("send");
     //     const msg = {
     //         id: u.id,
-    //         tag: "sex"
+    //         tag: ""
     //     };
     //     //getWebSocket()?.send(JSON.stringify(msg));
     //      sendMessage(JSON.stringify(msg), true);

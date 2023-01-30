@@ -50,7 +50,7 @@ export const PeticijaGrid = ({ sPeticije, peticije, user, moje }) => {
       })
       .then((data) => {
         if (data.status === 200) {
-          notify("Uspesno ste zapratili tag: " + tag);
+          console.log("Uspesno ste zapratili tag: " + tag);
         }
       })
       .catch((err) => {
