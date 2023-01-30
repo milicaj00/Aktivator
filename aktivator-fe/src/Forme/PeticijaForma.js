@@ -46,7 +46,7 @@ const PeticijaForma = () => {
   return (
     <Box
       className="cardCenter"
-      sx={{ gap: "1vh", padding: { sm: "10% 10%" }, alignItems: "stretch" }}
+      sx={{ gap: "1vh", margin: "10%", alignItems: "stretch" }}
     >
       <Typography className="cardCenter" variant="h4">
         Nova Peticija
@@ -55,7 +55,6 @@ const PeticijaForma = () => {
         <TextField
           sx={{ width: "100%", mb: "1vh" }}
           name="naslov"
-          className="loginInp"
           label="Naslov"
           type="text"
           color="primary"
@@ -64,7 +63,6 @@ const PeticijaForma = () => {
         <TextField
           sx={{ width: "100%", mb: "1vh" }}
           name="text"
-          className="prelomi"
           label="Tekst"
           type="text"
           color="primary"
@@ -74,11 +72,7 @@ const PeticijaForma = () => {
         />
         <Badge
           sx={{ width: "100%", mb: "1vh" }}
-          badgeContent={
-            <IconButton>
-              <HelpIcon color="secondary"> </HelpIcon>
-            </IconButton>
-          }
+          badgeContent={<HelpIcon color="secondary"></HelpIcon>}
         >
           <Tooltip
             placement="right-start"
@@ -87,7 +81,6 @@ const PeticijaForma = () => {
             <TextField
               fullWidth
               name="tag"
-              className="loginInp"
               label="Tagovi"
               type="text"
               color="primary"
@@ -97,7 +90,6 @@ const PeticijaForma = () => {
         </Badge>
         <TextField
           sx={{ width: "100%", mb: "1vh" }}
-          className="loginInp"
           type="file"
           onChange={(event) => {
             setSlika(event.target.files[0]);

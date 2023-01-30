@@ -47,7 +47,6 @@ const RegistracijaForma = () => {
         <TextField
           sx={{ width: "100%", mb: "1vh" }}
           name="ime"
-          className="loginInp"
           label="Ime"
           type="text"
           color="primary"
@@ -56,7 +55,6 @@ const RegistracijaForma = () => {
         <TextField
           sx={{ width: "100%", mb: "1vh" }}
           name="prezime"
-          className="loginInp"
           label="Prezime"
           type="text"
           color="primary"
@@ -65,7 +63,6 @@ const RegistracijaForma = () => {
         <TextField
           sx={{ width: "100%", mb: "1vh" }}
           name="email"
-          className="loginInp"
           label="Email"
           type="email"
           color="primary"
@@ -74,7 +71,6 @@ const RegistracijaForma = () => {
         <TextField
           sx={{ width: "100%", mb: "1vh" }}
           name="lozinka"
-          className="loginInp"
           label="Lozinka"
           type="password"
           minlenght="6"

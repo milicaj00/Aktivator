@@ -10,8 +10,6 @@ import React, { useEffect } from "react";
 import { lightTheme } from "./Komponente/Theme.js";
 
 function App() {
-    console.log("NESTO");
-
     const [user, setUser] = React.useState(null);
 
     useEffect(() => {
@@ -36,7 +34,7 @@ function App() {
                     theme="light"
                 />
                 <BrowserRouter>
-                    <Navbar />
+                    <Navbar user={user} />
                     <Rute user={user} />
                 </BrowserRouter>
             </>

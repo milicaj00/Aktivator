@@ -166,6 +166,8 @@ exports.editPeticija = async (req, res) => {
     }
     let session = neo4j_client.session();
 
+    RedisPeticija.deleteSinglePeticija(naslov)
+
     try {
         const p_res = await session.run(
             // `MATCH (p:Peticija {naslov:$naslov})-[:SIGNED]->(u:User {email : $user_email})

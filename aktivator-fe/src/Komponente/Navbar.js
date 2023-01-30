@@ -20,22 +20,15 @@ const pages = [
 ];
 const settings = ["Profil", "Logout"];
 
-function Navbar() {
+function Navbar({ user }) {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const [user, setUser] = React.useState(null);
-
-  const logout = () => {
-    localStorage.clear();
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
-  };
-
-  React.useEffect(() => {
-    const u = JSON.parse(localStorage.getItem("user"));
-    setUser(u);
-  }, []);
+    
+  // const [user, setUser] = React.useState(null);
+  // React.useEffect(() => {
+  //   const u = JSON.parse(localStorage.getItem("user"));
+  //   setUser(u);
+  // }, []);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -53,7 +46,8 @@ function Navbar() {
     console.log(setting);
     if (setting === "Profil") {
       navigate("../nalog", { replace: true });
-    } else {
+    }
+    if (setting === "Logout") {
       localStorage.clear();
       navigate("../");
       setTimeout(() => {
