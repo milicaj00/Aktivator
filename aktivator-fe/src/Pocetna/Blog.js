@@ -20,6 +20,7 @@ import { styled, alpha } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import BlogForma from "../Forme/BlogForma";
 import { toast } from "react-toastify";
+import { BlogGrid } from "../Komponente/BlogGrid";
 
 const WS_URL = "ws://127.0.0.1:3400";
 const PUTANJA = "http://localhost:3005/";
@@ -97,7 +98,7 @@ const Blog = () => {
     const seacrhBlog = event => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        const filter = "?tag=" + data.get("filter");
+        const filter = "?filter=" + data.get("filter");
         console.log(filter);
         getBlog(filter);
     };
@@ -150,7 +151,8 @@ const Blog = () => {
                     display: "flex",
                     justifyContent: "space-around",
                     alignItems: "center",
-                    mt: "5%"
+                    flexWrap:"wrap",
+                    m:'5vh 5vw 0vh 5vw'
                 }}
             >
                 <Typography variant="h4" component="div">
@@ -178,80 +180,7 @@ const Blog = () => {
                 </Search>
             </Box>
             <Divider sx={{ m: "1vh 5vw" }}></Divider>
-      <Box>
-                {blogovi.map((b, i) => (
-                    <Card key={i} className="marginS">
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} md={4}>
-                                <CardMedia
-                                    sx={{ maxHeight: "50vh" }}
-                                    component="img"
-                                                      src={PUTANJA + b.slika}
-                                    alt={b.naziv}
-                                    className="trImg"
-                                />
-                            </Grid>
-                            <Grid
-                                item
-                                xs={12}
-                                md={8}
-                                sx={{
-                                    display: "flex",
-                                    flexDirection: "column"
-                                }}
-                            >
-                                <CardContent>
-                                    <Typography variant="h4" component="div">
-                                        {b.naslov}
-                                    </Typography>
-                                    <Typography
-                                        sx={{ mb: 1.5 }}
-                                        variant="body2"
-                                        color="text.secondary"
-                                    >
-                                        {b.vlasnik.name} {b.vlasnik.surname}
-                                    </Typography>
-                                    <Box>
-                                        {b.tag.map((t, i) => (
-                                            <Tooltip key={i} title="Zaprati tag">
-                                                <Button
-                                                    onClick={() =>
-                                                        zapratiTag(t)
-                                                    }
-                                                >
-                                                    {t}
-                                                </Button>
-                                            </Tooltip>
-                                        ))}
-                                    </Box>
-                                    <Typography sx={{ mb: 1.5 }}>
-                                        {b.text.substring(0, 500)}
-                                    </Typography>
-                                </CardContent>
-                                <CardActions
-                                    sx={{
-                                        flexGrow: "1",
-                                        alignItems: "flex-end"
-                                    }}
-                                >
-                                    <Button
-                                        fullWidth
-                                        variant="contained"
-                                        size="small"
-                                        onClick={() => {
-                                            navigate(`/blog/${b.naslov}`, {
-                                                state: b
-                                            });
-                                        }}
-                                    >
-                                        Prikazi vise
-                                    </Button>
-                                </CardActions>
-                            </Grid>
-                        </Grid>
-                    </Card>
-                ))}
-            </Box>
+            <BlogGrid blogovi = {blogovi} user ={user} moje= {false}/>
             <Dialog open={open} onClose={handleClose}>
                 <BlogForma />
             </Dialog>

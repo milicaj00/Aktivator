@@ -45,13 +45,12 @@ const LoginForma = () => {
       sx={{ gap: "1vh", padding: { sm: "10% 10%" }, alignItems: "stretch" }}
     >
       <Typography variant="h5" component="div" sx={{ textAlign: "center" }}>
-        Prijavljivanje
+        Prijava
       </Typography>
       <Box sx = {{padding:"0% 20%" }} component="form" onSubmit={login}>
         <TextField
           sx={{ width: "100%", mb: "1vh" }}
           name="email"
-          className="loginInp"
           label="Email"
           type="email"
           color="primary"
@@ -60,7 +59,6 @@ const LoginForma = () => {
         <TextField
           sx={{ width: "100%", mb: "1vh" }}
           name="password"
-          className="loginInp"
           label="Lozinka"
           type="password"
           minlenght="6"
@@ -73,7 +71,7 @@ const LoginForma = () => {
           variant="contained"
           type="submit"
         >
-          Uloguj se
+          Prijavi se
         </Button>
       </Box>
     </Box>

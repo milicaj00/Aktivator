@@ -1,10 +1,21 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, Grid, CardMedia, CardContent, Typography } from "@mui/material";
+import { getBlog } from "../api";
 
-//http://localhost:3000/api/blog/singleBlog/treci blog
+const PUTANJA = "http://localhost:3005/";
+
 const BlogVeliki = () => {
   let { naslov } = useParams();
+  const [blog, setBlog] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const u = JSON.parse(localStorage.getItem("user"));
+    setUser(u);
+    getBlog(naslov, setBlog);
+    
+  }, []);
 
   return (
     <Card sx={{ margin: "5vw" }} elevation={3}>
@@ -13,8 +24,7 @@ const BlogVeliki = () => {
           <CardMedia
             component="img"
             className="trImg"
-            // image={blog.slika}
-            src="https://srd-pescenica.hr/wp-content/uploads/2016/03/Savica-8.jpg"
+            src={blog?.slika ? PUTANJA + blog?.slika : null}
             alt={naslov}
             height="250"
           />
@@ -34,24 +44,7 @@ const BlogVeliki = () => {
               align="justify"
               sx={{ padding: "2vh 3vw" }}
             >
-              {/* {" "}
-              {blog.tekst}{" "} */}
-              "But I must explain to you how all this mistaken idea of
-              denouncing pleasure and praising pain was born and I will give you
-              a complete account of the system, and expound the actual teachings
-              of the great explorer of the truth, the master-builder of human
-              happiness. No one rejects, dislikes, or avoids pleasure itself,
-              because it is pleasure, but because those who do not know how to
-              pursue pleasure rationally encounter consequences that are
-              extremely painful. Nor again is there anyone who loves or pursues
-              or desires to obtain pain of itself, because it is pain, but
-              because occasionally circumstances occur in which toil and pain
-              can procure him some great pleasure. To take a trivial example,
-              which of us ever undertakes laborious physical exercise, except to
-              obtain some advantage from it? But who has any right to find fault
-              with a man who chooses to enjoy a pleasure that has no annoying
-              consequences, or one who avoids a pain that produces no resultant
-              pleasure?"
+              {blog?.text}
             </Typography>
           </CardContent>
         </Grid>

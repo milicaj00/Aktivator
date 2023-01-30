@@ -4,7 +4,8 @@ import {
   Box,
   Badge,
   IconButton,
-  Tooltip,Typography
+  Tooltip,
+  Typography,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -47,7 +48,7 @@ const BlogForma = () => {
 
   return (
     <Box
-      className="cardCenter"
+      className="cardCenter marginS"
       sx={{ gap: "1vh", padding: { sm: "10% 10%" }, alignItems: "stretch" }}
     >
       <Typography className="cardCenter" variant="h4">
@@ -74,11 +75,7 @@ const BlogForma = () => {
         />
         <Badge
           sx={{ width: "100%", mb: "1vh" }}
-          badgeContent={
-            <IconButton>
-              <HelpIcon color="secondary"> </HelpIcon>
-            </IconButton>
-          }
+          badgeContent={<HelpIcon color="secondary"> </HelpIcon>}
         >
           <Tooltip
             placement="right-start"

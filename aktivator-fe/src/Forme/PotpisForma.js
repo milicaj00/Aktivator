@@ -22,8 +22,6 @@ const PotpisForma = ({ naslov }) => {
       .then((res) => {
         console.log({ res });
         if (res.status === 200) {
-          //IDE LOGIN NE ZNAM
-          console.log("DOBROJE");
           notify();
           setTimeout(() => {
             window.location.reload();
@@ -46,7 +44,7 @@ const PotpisForma = ({ naslov }) => {
 
   return (
     <Box
-      className="cardCenter"
+      className="cardCenter marginS"
       sx={{ gap: "1vh", padding: { sm: "10% 10%" }, alignItems: "stretch" }}
     >
       <Typography variant="h5" component="div" sx={{ textAlign: "center" }}>
